@@ -16,7 +16,7 @@ class views.NetworkList extends Backbone.View
     @
 
   renderItem: (network) ->
-    view = new views.NetworkItem
+    view = new views.NetworkListItem
       model: network
       app: @app
     @$el.append view.render().el
@@ -48,18 +48,24 @@ class views.NetworkListItem extends Backbone.View
 class views.Network extends Backbone.View
   nodeViews: null
   edgeViews: null
+  initialViews: null
 
   initialize: ->
     @nodeViews = {}
+    @initialViews = []
     @edgeViews = []
 
   render: ->
     @$el.empty()
 
     @model.get('nodes').each @renderNode, @
-    @model.get('edges').each @renderEdge, @
+    @model.get('edges').each (edge) ->
+      from = edge.get 'from'
+      @renderInitial from unless from.node
+      @renderEdge edge
+    , @
 
-    # TODO: Render initials and legends
+    # TODO: Render legends
 
     @
 
@@ -67,7 +73,8 @@ class views.Network extends Backbone.View
     @initializePlumb()
     _.each @nodeViews, (view) ->
       view.activate()
-
+    _.each @initialViews, (view) ->
+      view.activate()
     _.each @edgeViews, (view) ->
       view.activate()
     @bindPlumb()
@@ -104,6 +111,15 @@ class views.Network extends Backbone.View
       networkView: @
     @$el.append view.render().el
     @nodeViews[node.id] = view
+
+  renderInitial: (from) ->
+    # IIP, render the data node as well
+    iip = new window.noflo.models.Initial from
+    view = new views.Initial
+      model: iip
+      networkView: @
+    @$el.append view.render().el
+    @initialViews.push view
 
   renderEdge: (edge) ->
     view = new views.Edge
@@ -169,21 +185,27 @@ class views.Node extends Backbone.View
     _.each @outEndpoints, (view) ->
       view.activate()
 
-  makeDraggable: ->
-    jsPlumb.draggable @el,
-      stop: (event, data) => @dragStop data
+class views.Initial extends Backbone.View
+  tagName: 'div'
+  className: 'initial'
+
+  render: ->
+    @$el.html @model.get 'data'
+    @renderOutport()
     @
 
-  dragStop: (data) ->
-    @model.set
-      display:
-        x: data.offset.top
-        y: data.offset.left
-    @model.save
-      success: ->
-        console.log "SUCCESS"
-      error: ->
-        console.log "ERROR"
+  renderOutport: ->
+    view = new views.Port
+      model: new window.noflo.models.Port
+      inPort: false
+      nodeView: @
+      anchor: "RightMiddle"
+    view.render()
+    @outEndpoint = view
+
+  activate: ->
+    @makeDraggable()
+    @outEndpoint.activate()
 
 class views.Port extends Backbone.View
   endPoint: null
@@ -238,11 +260,35 @@ class views.Edge extends Backbone.View
     @
 
   activate: ->
-    return unless @model.get('from').node
+    sourceDef = @model.get 'from'
+    targetDef = @model.get 'to'
 
-    source = @model.get 'from'
-    target = @model.get 'to'
+    if sourceDef.node
+      source = @networkView.nodeViews[sourceDef.node].outEndpoints[sourceDef.port].endPoint
+    else
+      source = @networkView.initialViews[0].outEndpoint.endPoint
 
+    target = @networkView.nodeViews[targetDef.node].inEndpoints[targetDef.port].endPoint
     @connection = jsPlumb.connect
-      source: @networkView.nodeViews[source.node].outEndpoints[source.port].endPoint
-      target: @networkView.nodeViews[target.node].inEndpoints[target.port].endPoint
+      source: source
+      target: target
+
+views.DraggableMixin =
+  makeDraggable: ->
+    jsPlumb.draggable @el,
+      stop: (event, data) => @dragStop data
+    @
+
+  dragStop: (data) ->
+    @model.set
+      display:
+        x: data.offset.top
+        y: data.offset.left
+    @model.save
+      success: ->
+        console.log "SUCCESS"
+      error: ->
+        console.log "ERROR"
+
+_.extend views.Node::, views.DraggableMixin
+_.extend views.Initial::, views.DraggableMixin

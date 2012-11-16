@@ -26,6 +26,8 @@ class models.Networks extends Backbone.Collection
 
   url: "/network"
 
+class models.Initial extends Backbone.Model
+
 class models.Node extends Backbone.Model
   defaults:
     component: ""
