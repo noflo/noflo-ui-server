@@ -1,0 +1,28 @@
+@highlight: #33B5E5;
+@background: #000000;
+
+div.graph {
+  position: absolute;
+  top: 60px;
+  min-width: 100%;
+  min-height: 600px;
+  font-family: 'Droid Sans', sans-serif;
+}
+
+div.process {
+  position: absolute;
+  width: 120px;
+  height: 60px;
+  border: 2px solid @highlight;
+  box-shadow: 2px 2px 19px @highlight;
+  border-radius: 6px;
+  z-index: 100;
+  text-align: center;
+  padding: 6px;
+  font-color: #ffffff;
+}
+
+._jsPlumb_endpoint {
+  z-index: 120;
+  text-transform: uppercase;
+}
