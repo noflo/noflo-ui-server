@@ -19,12 +19,26 @@ class window.noflo.Router extends Backbone.Router
 
   network: (id) ->
     network = @networks.get id
-    network.fetch
-      success: =>
-        # The view will handle rendering necessary subviews for nodes, edges, etc
-        networkView = new window.noflo.views.Network
-          model: network
-        @rootElement.html networkView.render().el
 
-        # Activate the graph editor after insertion
-        networkView.activate()
+    display = =>
+      # The view will handle rendering necessary subviews for nodes, edges, etc
+      networkView = new window.noflo.views.Network
+        model: network
+      @rootElement.html networkView.render().el
+
+      # Activate the graph editor after insertion
+      networkView.activate()
+
+    todo = 3
+    network.get('nodes').fetch
+      success: ->
+        todo--
+        do display if todo is 0
+    network.get('edges').fetch
+      success: ->
+        todo--
+        do display if todo is 0
+    network.fetch
+      success: ->
+        todo--
+        do display if todo is 0

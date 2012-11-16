@@ -1,5 +1,6 @@
 express = require 'express'
 assets = require 'connect-assets'
+resource = require 'express-resource'
 
 exports.createServer = (callback) ->
   app = express()
@@ -9,19 +10,28 @@ exports.createServer = (callback) ->
   #app.use express.logger()
   app.use express.bodyParser()
 
+  # Expose networks to resources
+  app.networks = []
+  app.use (req, res, next) ->
+    req.networks = app.networks
+    next()
+
   # Asset pipeline for CoffeeScript and other files
   app.use assets
     src: "#{__dirname}/../assets"
 
   app.get '/', (req, res) ->
-    res.render 'index'
-      body: "Hello, world!"
-    , (err, html) ->
+    res.render 'index', {}, (err, html) ->
       console.log err if err
       res.send html
 
-  app.networks = []
-  routes = require './routes'
-  routes.registerRoutes app
+
+  networks = app.resource 'network', require './resource/network'
+  nodes = app.resource 'node', require './resource/node'
+  networks.add nodes
+  edges = app.resource 'edge', require './resource/edge'
+  networks.add edges
+  #routes = require './routes'
+  #routes.registerRoutes app
 
   callback app

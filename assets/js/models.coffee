@@ -9,17 +9,10 @@ class models.Network extends Backbone.Model
 
   initialize: (attributes) ->
     attributes ?= {}
-    attributes.nodes ?= []
-    attributes.edges ?= []
-
-  set: (attributes) ->
-    if attributes.nodes
-      attributes.nodes = new models.Nodes attributes.nodes,
-        network: @
-    if attributes.edges
-      attributes.edges = new models.Edges attributes.edges,
-        network: @
-    Backbone.Model::set.call @, attributes
+    this.set 'nodes', new models.Nodes attributes.nodes,
+      network: @
+    this.set 'edges', new models.Edges attributes.edges,
+      network: @
 
 class models.Networks extends Backbone.Collection
   model: models.Network

@@ -9,11 +9,17 @@ class views.NetworkList extends Backbone.View
   initialize: (options) ->
     @app = options?.app
     @collection = options?.collection
+    _.bindAll @, 'renderItems'
+    @collection.bind 'reset add remove', @renderItems
+    @
 
   render: ->
     @$el.empty()
-    @collection.each @renderItem, @
+    @renderItems()
     @
+
+  renderItems: ->
+    @collection.each @renderItem, @
 
   renderItem: (network) ->
     view = new views.NetworkListItem
@@ -55,19 +61,28 @@ class views.Network extends Backbone.View
     @initialViews = []
     @edgeViews = []
 
+    _.bindAll @, 'renderNodes', 'renderEdges'
+    @model.get('nodes').bind 'reset', @renderNodes
+    @model.get('edges').bind 'edges', @renderEdges
+
   render: ->
     @$el.empty()
 
+    @renderNodes()
+    @renderEdges()
+    # TODO: Render legends
+
+    @
+
+  renderNodes: ->
     @model.get('nodes').each @renderNode, @
+
+  renderEdges: ->
     @model.get('edges').each (edge) ->
       from = edge.get 'from'
       @renderInitial from unless from.node
       @renderEdge edge
     , @
-
-    # TODO: Render legends
-
-    @
 
   activate: ->
     @initializePlumb()
