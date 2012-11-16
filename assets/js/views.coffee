@@ -79,8 +79,7 @@ class views.Network extends Backbone.View
 
   renderEdges: ->
     @model.get('edges').each (edge) ->
-      from = edge.get 'from'
-      @renderInitial from unless from.node
+      @renderInitial edge unless edge.get('from').node
       @renderEdge edge
     , @
 
@@ -105,6 +104,9 @@ class views.Network extends Backbone.View
     jsPlumb.Defaults.DragOptions =
       cursor: "pointer"
       zIndex: 2000
+    jsPlumb.Defaults.ConnectionOverlays = [
+      [ "PlainArrow" ]
+    ]
     jsPlumb.setRenderMode jsPlumb.CANVAS
 
   bindPlumb: ->
@@ -127,9 +129,11 @@ class views.Network extends Backbone.View
     @$el.append view.render().el
     @nodeViews[node.id] = view
 
-  renderInitial: (from) ->
+  renderInitial: (edge) ->
     # IIP, render the data node as well
-    iip = new window.noflo.models.Initial from
+    iip = new window.noflo.models.Initial
+      data: edge.get('from').data
+      to: edge.get('to')
     view = new views.Initial
       model: iip
       networkView: @
@@ -292,7 +296,11 @@ class views.Edge extends Backbone.View
     if sourceDef.node
       source = @networkView.nodeViews[sourceDef.node].outEndpoints[sourceDef.port].endPoint
     else
-      source = @networkView.initialViews[0].outEndpoint.endPoint
+      for initialView in @networkView.initialViews
+        to = initialView.model.get 'to'
+        continue unless to.node is targetDef.node and to.port is targetDef.port
+        continue if initialView.outEndpoint.endPoint.isFull()
+        source = initialView.outEndpoint.endPoint
 
     target = @networkView.nodeViews[targetDef.node].inEndpoints[targetDef.port].endPoint
     @connection = jsPlumb.connect
