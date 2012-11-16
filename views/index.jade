@@ -1,0 +1,21 @@
+doctype 5
+html(lang="en")
+  head
+    title NoFlo UI
+    != css('vendor/bootstrap')
+    != css('noflo')
+    != js('noflo')
+    script#NetworkListItem(type="text/html")
+      li.span4
+        div.thumbnail
+          h2 <%= name %>
+          button.edit.btn Edit
+    script#Node(type="text/html")
+      p.label <%= id %>
+      p.component <%= component %>
+  body
+    div.navbar.navbar-fixed-top
+      div.navbar-inner
+        div.container
+          h1 NoFlo UI
+    div.graph#noflo
