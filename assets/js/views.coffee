@@ -246,6 +246,10 @@ class views.Port extends Backbone.View
       portOptions.isTarget = true
       portOptions.overlays[0][1].location = [-1.5, -0.5]
     if @model.get('type') is 'array'
+      portOptions.endpoint = [
+        'Rectangle'
+        readius: 6
+      ]
       portOptions.maxConnections = -1
     @endPoint = jsPlumb.addEndpoint @nodeView.el, portOptions, @portDefaults
 
