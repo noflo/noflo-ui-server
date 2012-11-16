@@ -159,6 +159,8 @@ class views.Node extends Backbone.View
   render: ->
     @$el.attr 'id', @model.get 'cleanId'
 
+    @$el.addClass 'subgraph' if @model.get 'subgraph'
+
     if @model.has 'display'
       @$el.css
         top: @model.get('display').x
@@ -200,6 +202,9 @@ class views.Node extends Backbone.View
     _.each @outEndpoints, (view) ->
       view.activate()
 
+  saveModel: ->
+    @model.save()
+
 class views.Initial extends Backbone.View
   tagName: 'div'
   className: 'initial'
@@ -221,6 +226,8 @@ class views.Initial extends Backbone.View
   activate: ->
     @makeDraggable()
     @outEndpoint.activate()
+
+  saveModel: ->
 
 class views.Port extends Backbone.View
   endPoint: null
@@ -303,11 +310,7 @@ views.DraggableMixin =
       display:
         x: data.offset.top
         y: data.offset.left
-    @model.save
-      success: ->
-        console.log "SUCCESS"
-      error: ->
-        console.log "ERROR"
+    @saveModel()
 
 _.extend views.Node::, views.DraggableMixin
 _.extend views.Initial::, views.DraggableMixin

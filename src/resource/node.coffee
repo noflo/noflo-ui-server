@@ -3,6 +3,8 @@ noflo = require 'noflo'
 prepareNode = (node, network) ->
   process = network.getNode node.id
 
+  node.subgraph = process.component.isSubgraph()
+
   node.inPorts = []
   node.outPorts = []
   for name, port of process.component.inPorts
