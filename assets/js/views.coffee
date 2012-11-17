@@ -55,6 +55,10 @@ class views.Network extends Backbone.View
   nodeViews: null
   edgeViews: null
   initialViews: null
+  className: 'graph'
+
+  events:
+    'click': 'graphClicked'
 
   initialize: ->
     @nodeViews = {}
@@ -65,6 +69,10 @@ class views.Network extends Backbone.View
     @model.get('nodes').bind 'reset', @renderNodes
     @model.get('edges').bind 'edges', @renderEdges
     @model.get('edges').bind 'add', @renderEdge
+
+  graphClicked: (event) ->
+    return unless event.target is @el
+    console.log "Graph clicked"
 
   render: ->
     @$el.empty()
@@ -108,7 +116,7 @@ class views.Network extends Backbone.View
     jsPlumb.Defaults.ConnectionOverlays = [
       [ "PlainArrow" ]
     ]
-    jsPlumb.setRenderMode jsPlumb.CANVAS
+    jsPlumb.setRenderMode jsPlumb.SVG
 
   bindPlumb: ->
     jsPlumb.bind 'jsPlumbConnection', (info) =>
