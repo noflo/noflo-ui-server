@@ -76,7 +76,9 @@ class models.Edge extends Backbone.Model
     from: null
     to: null
 
-  url: -> "#{@collection.url()}/#{@id}"
+  url: ->
+    return @collection.url() unless @id
+    "#{@collection.url()}/#{@id}"
 
 class models.Edges extends Backbone.Collection
   model: models.Edge

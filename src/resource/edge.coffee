@@ -13,7 +13,7 @@ prepareEdge = (edge, index) ->
 
 exports.load = (req, id, callback) ->
   for edge, index in getEdges req.network
-    continue unless index is parseInt id
+    continue unless index + 1 is parseInt id
     edge.id = index
     return callback null, edge
   return callback 'not found', null
@@ -24,11 +24,8 @@ exports.index = (req, res) ->
   res.send edges
 
 exports.create = (req, res) ->
-  unless req.body.id and req.body.component
-    return res.send "Missing ID or component definition", 422
-
-  req.network.graph.addEdge req.body.id, req.body.component, req.body.display
-  res.header 'Location', "/network/#{req.network.id}/edge/#{req.body.id}"
+  req.network.graph.addEdge req.body.from.node, req.body.from.port, req.body.to.node, req.body.to.port
+  res.header 'Location', "/network/#{req.network.id}/edge/#{req.network.graph.edges.length + 1}"
   res.send null, 201
 
 exports.show = (req, res) ->
@@ -41,5 +38,5 @@ exports.update = (req, res) ->
   res.send prepareEdge req.edge
 
 exports.destroy = (req, res) ->
-  req.network.graph.removeEdge req.edge.id
+  req.network.graph.removeEdge req.edge.to.node, req.edge.to.port
   res.send prepareEdge req.edge

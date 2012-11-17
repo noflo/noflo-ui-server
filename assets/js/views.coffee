@@ -110,17 +110,26 @@ class views.Network extends Backbone.View
     jsPlumb.setRenderMode jsPlumb.CANVAS
 
   bindPlumb: ->
-    jsPlumb.bind 'jsPlumbConnection', (info) ->
-      console.log "ATTACH", info
+    jsPlumb.bind 'jsPlumbConnection', (info) =>
+      newEdge = {}
+      for nodeId, nodeView of @nodeViews
+        for port, portView of nodeView.outPorts
+          continue unless portView.endPoint is info.sourceEndpoint
+          newEdge.from =
+            node: nodeId
+            port: port
+        for port, portView of nodeView.inPorts
+          continue unless portView.endPoint is info.targetEndpoint
+          newEdge.to =
+            node: nodeId
+            port: port
+      return unless newEdge.to and newEdge.from
+      @model.get('edges').create newEdge
+
     jsPlumb.bind 'jsPlumbConnectionDetached', (info) =>
       for edgeView in @edgeViews
         continue unless edgeView.connection is info.connection
-        console.log "DETACH", edgeView.model
-        edgeView.model.destroy
-          success: ->
-            console.log "CONNECTION DELETED"
-          error: ->
-            console.log "FAILED TO DELETE CONNECTION"
+        edgeView.model.destroy()
 
   renderNode: (node) ->
     view = new views.Node
@@ -150,15 +159,15 @@ class views.Network extends Backbone.View
 class views.Node extends Backbone.View
   inAnchors: ["LeftMiddle", "TopLeft", "BottomLeft"]
   outAnchors: ["RightMiddle", "TopRight", "BottomRight"]
-  inEndpoints: null
-  outEndpoints: null
+  inPorts: null
+  outPorts: null
   template: '#Node'
   tagName: 'div'
   className: 'process'
 
   initialize: (options) ->
-    @inEndpoints = {}
-    @outEndpoints = {}
+    @inPorts = {}
+    @outPorts = {}
 
   render: ->
     @$el.attr 'id', @model.get 'cleanId'
@@ -188,7 +197,7 @@ class views.Node extends Backbone.View
       nodeView: @
       anchor: @inAnchors[index]
     view.render()
-    @inEndpoints[port.get('name')] = view
+    @inPorts[port.get('name')] = view
 
   renderOutport: (port, index) ->
     view = new views.Port
@@ -197,13 +206,13 @@ class views.Node extends Backbone.View
       nodeView: @
       anchor: @outAnchors[index]
     view.render()
-    @outEndpoints[port.get('name')] = view
+    @outPorts[port.get('name')] = view
 
   activate: ->
     @makeDraggable()
-    _.each @inEndpoints, (view) ->
+    _.each @inPorts, (view) ->
       view.activate()
-    _.each @outEndpoints, (view) ->
+    _.each @outPorts, (view) ->
       view.activate()
 
   saveModel: ->
@@ -294,7 +303,7 @@ class views.Edge extends Backbone.View
     targetDef = @model.get 'to'
 
     if sourceDef.node
-      source = @networkView.nodeViews[sourceDef.node].outEndpoints[sourceDef.port].endPoint
+      source = @networkView.nodeViews[sourceDef.node].outPorts[sourceDef.port].endPoint
     else
       for initialView in @networkView.initialViews
         to = initialView.model.get 'to'
@@ -302,7 +311,7 @@ class views.Edge extends Backbone.View
         continue if initialView.outEndpoint.endPoint.isFull()
         source = initialView.outEndpoint.endPoint
 
-    target = @networkView.nodeViews[targetDef.node].inEndpoints[targetDef.port].endPoint
+    target = @networkView.nodeViews[targetDef.node].inPorts[targetDef.port].endPoint
     @connection = jsPlumb.connect
       source: source
       target: target
