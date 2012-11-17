@@ -24,9 +24,8 @@ exports.index = (req, res) ->
   res.send edges
 
 exports.create = (req, res) ->
-  req.network.graph.addEdge req.body.from.node, req.body.from.port, req.body.to.node, req.body.to.port
-  res.header 'Location', "/network/#{req.network.id}/edge/#{req.network.graph.edges.length + 1}"
-  res.send null, 201
+  edge = req.network.graph.addEdge req.body.from.node, req.body.from.port, req.body.to.node, req.body.to.port
+  res.send prepareEdge edge, req.network.graph.edges.length - 1
 
 exports.show = (req, res) ->
   res.send prepareEdge req.edge, req.edge.id

@@ -61,9 +61,10 @@ class views.Network extends Backbone.View
     @initialViews = []
     @edgeViews = []
 
-    _.bindAll @, 'renderNodes', 'renderEdges'
+    _.bindAll @, 'renderNodes', 'renderEdges', 'renderEdge'
     @model.get('nodes').bind 'reset', @renderNodes
     @model.get('edges').bind 'edges', @renderEdges
+    @model.get('edges').bind 'add', @renderEdge
 
   render: ->
     @$el.empty()
@@ -111,7 +112,8 @@ class views.Network extends Backbone.View
 
   bindPlumb: ->
     jsPlumb.bind 'jsPlumbConnection', (info) =>
-      newEdge = {}
+      newEdge =
+        connection: info.connection
       for nodeId, nodeView of @nodeViews
         for port, portView of nodeView.outPorts
           continue unless portView.endPoint is info.sourceEndpoint
@@ -293,12 +295,17 @@ class views.Edge extends Backbone.View
   connection: null
 
   initialize: (options) ->
+    @connection = null
     @networkView = options?.networkView
+    if @model.has 'connection'
+      @connection = @model.get 'connection'
+      @model.unset 'connection'
 
   render: ->
     @
 
   activate: ->
+    return if @connection
     sourceDef = @model.get 'from'
     targetDef = @model.get 'to'
 
