@@ -223,7 +223,7 @@ class views.Initial extends Backbone.View
       model: new window.noflo.models.Port
       inPort: false
       nodeView: @
-      anchor: "RightMiddle"
+      anchor: "BottomCenter"
     view.render()
     @outEndpoint = view
 
