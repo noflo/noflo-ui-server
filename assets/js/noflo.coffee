@@ -3,6 +3,7 @@
 #= require vendor/jsplumb
 #= require vendor/underscore
 #= require vendor/backbone
+#= require vendor/bootstrap
 #= require models
 #= require views
 #= require router

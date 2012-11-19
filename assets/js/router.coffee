@@ -7,6 +7,7 @@ class window.noflo.Router extends Backbone.Router
     '':         'index'
     'network/:network': 'network'
     'network/:network/add': 'addNode'
+    'network/:network/add/:x/:y': 'addNodePositioned'
 
   initialize: (options) ->
     @networks = options.networks
@@ -45,14 +46,18 @@ class window.noflo.Router extends Backbone.Router
         todo--
         do display if todo is 0
 
-  addNode: (id) ->
+  addNode: (id, display) ->
     network = @networks.get id
-
     network.get('components').fetch
       success: =>
         view = new window.noflo.views.AddNode
           collection: network.get 'components'
           app: @
           model: network
+          display: display
         @rootElement.html view.render().el
 
+  addNodePositioned: (id, x, y) ->
+    @addNode id,
+      x: parseInt x
+      y: parseInt y

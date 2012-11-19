@@ -56,8 +56,10 @@ class views.Network extends Backbone.View
   edgeViews: null
   initialViews: null
   className: 'graph'
+  popoverTemplate: '#NetworkPopover'
 
   events:
+    'click button.addnode': 'addNode'
     'click': 'graphClicked'
 
   initialize: (options) ->
@@ -65,15 +67,44 @@ class views.Network extends Backbone.View
     @initialViews = []
     @edgeViews = []
     @app = options?.app
+    @popover = null
 
     _.bindAll @, 'renderNodes', 'renderEdges', 'renderEdge'
     @model.get('nodes').bind 'reset', @renderNodes
     @model.get('edges').bind 'edges', @renderEdges
     @model.get('edges').bind 'add', @renderEdge
 
+  removePopover: ->
+    return unless @popover
+    @popover.popover 'destroy'
+    @popover.remove()
+    @popover = null
+
+  getPopover: (top, left) ->
+    target = jQuery '<div></div>'
+    target.css
+      position: 'absolute'
+      top: top
+      left: left
+    @$el.append target
+
+    target.popover
+      placement: 'bottom'
+      html: true
+      title: 'Select what to add'
+      content: _.template jQuery(@popoverTemplate).html(), {}
+    target.popover 'show'
+    @popover = target
+
   graphClicked: (event) ->
+    do @removePopover
     return unless event.target is @el
-    @app.navigate "#network/#{@model.id}/add", true
+    @getPopover event.offsetY, event.offsetX
+
+  addNode: ->
+    x = @popover.css('top').replace 'px', ''
+    y = @popover.css('left').replace 'px', ''
+    @app.navigate "#network/#{@model.id}/add/#{x}/#{y}", true
 
   render: ->
     @$el.empty()
@@ -174,6 +205,7 @@ class views.AddNode extends Backbone.View
   initialize: (options) ->
     @app = options?.app
     @collection = options?.collection
+    @display = options?.display
 
   render: ->
     @$el.empty()
@@ -185,6 +217,7 @@ class views.AddNode extends Backbone.View
       model: component
       app: @app
       network: @model
+      display: @display
     @$el.append view.render().el
 
 class views.AddNodeComponent extends Backbone.View
@@ -198,10 +231,12 @@ class views.AddNodeComponent extends Backbone.View
   initialize: (options) ->
     @app = options?.app
     @network = options?.network
+    @display = options?.display
 
   useClicked: ->
     @network.get('nodes').create
       component: @model.get 'name'
+      display: @display
     @app.navigate "#network/#{@network.id}", true
 
   render: ->

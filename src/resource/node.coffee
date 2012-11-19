@@ -39,9 +39,8 @@ exports.create = (req, res) ->
     return res.send "Missing component definition", 422
   req.body.id = req.body.component unless req.body.id
 
-  req.network.graph.addNode req.body.id, req.body.component, req.body.display
-  res.header 'Location', "/network/#{req.network.id}/node/#{req.body.id}"
-  res.send null, 201
+  node = req.network.graph.addNode req.body.id, req.body.component, req.body.display
+  res.send prepareNode node, req.network
 
 exports.show = (req, res) ->
   res.send prepareNode req.node, req.network
