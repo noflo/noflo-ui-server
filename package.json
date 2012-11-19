@@ -15,6 +15,7 @@
     "express": "3.x",
     "express-resource": "1.x",
     "connect-assets": "2.x",
-    "jade": "0.27.x"
+    "jade": "0.27.x",
+    "underscore": "1.4.x"
   }
 }

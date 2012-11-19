@@ -31,7 +31,7 @@ exports.createServer = (callback) ->
   networks.add nodes
   edges = app.resource 'edge', require './resource/edge'
   networks.add edges
-  #routes = require './routes'
-  #routes.registerRoutes app
+  components = app.resource 'component', require './resource/component'
+  networks.add components
 
   callback app
