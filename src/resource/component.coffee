@@ -2,9 +2,7 @@
 
 prepareComponent = (component, instance, callback) ->
   unless instance.isReady()
-    console.log "WAIT #{component}"
     instance.once 'ready', ->
-      console.log "READY #{component}"
       prepareComponent component, instance, callback
     return
 
