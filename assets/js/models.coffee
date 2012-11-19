@@ -13,6 +13,8 @@ class models.Network extends Backbone.Model
       network: @
     this.set 'edges', new models.Edges attributes.edges,
       network: @
+    this.set 'components', new models.Components attributes.components,
+      network: @
 
 class models.Networks extends Backbone.Collection
   model: models.Network
@@ -20,6 +22,17 @@ class models.Networks extends Backbone.Collection
   url: "/network"
 
 class models.Initial extends Backbone.Model
+
+class models.Component extends Backbone.Model
+
+class models.Components extends Backbone.Collection
+  model: models.Component
+  network: null
+
+  initialize: (models, options) ->
+    @network = options?.network
+
+  url: -> "/network/#{@network.id}/component"
 
 class models.Node extends Backbone.Model
   defaults:
@@ -44,7 +57,9 @@ class models.Node extends Backbone.Model
         node: @
     Backbone.Model::set.call @, attributes
 
-  url: -> "#{@collection.url()}/#{@id}"
+  url: ->
+    return @collection.url() unless @id
+    "#{@collection.url()}/#{@id}"
 
 class models.Nodes extends Backbone.Collection
   model: models.Node

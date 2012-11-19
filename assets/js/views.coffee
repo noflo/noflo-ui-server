@@ -60,10 +60,11 @@ class views.Network extends Backbone.View
   events:
     'click': 'graphClicked'
 
-  initialize: ->
+  initialize: (options) ->
     @nodeViews = {}
     @initialViews = []
     @edgeViews = []
+    @app = options?.app
 
     _.bindAll @, 'renderNodes', 'renderEdges', 'renderEdge'
     @model.get('nodes').bind 'reset', @renderNodes
@@ -72,7 +73,7 @@ class views.Network extends Backbone.View
 
   graphClicked: (event) ->
     return unless event.target is @el
-    console.log "Graph clicked"
+    @app.navigate "#network/#{@model.id}/add", true
 
   render: ->
     @$el.empty()
@@ -165,6 +166,48 @@ class views.Network extends Backbone.View
       networkView: @
     view.render()
     @edgeViews.push view
+
+class views.AddNode extends Backbone.View
+  tagName: 'ul'
+  className: 'thumbnails'
+
+  initialize: (options) ->
+    @app = options?.app
+    @collection = options?.collection
+
+  render: ->
+    @$el.empty()
+    @collection.each @renderComponent, @
+    @
+
+  renderComponent: (component) ->
+    view = new views.AddNodeComponent
+      model: component
+      app: @app
+      network: @model
+    @$el.append view.render().el
+
+class views.AddNodeComponent extends Backbone.View
+  template: '#AddNodeComponent'
+  tagName: 'li'
+  className: 'span4'
+
+  events:
+    'click button.use': 'useClicked'
+
+  initialize: (options) ->
+    @app = options?.app
+    @network = options?.network
+
+  useClicked: ->
+    @network.get('nodes').create
+      component: @model.get 'name'
+    @app.navigate "#network/#{@network.id}", true
+
+  render: ->
+    template = jQuery(@template).html()
+    @$el.html _.template template, @model.toJSON()
+    @
 
 class views.Node extends Backbone.View
   inAnchors: ["LeftMiddle", "TopLeft", "BottomLeft"]

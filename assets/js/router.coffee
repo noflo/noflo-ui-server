@@ -6,6 +6,7 @@ class window.noflo.Router extends Backbone.Router
   routes:
     '':         'index'
     'network/:network': 'network'
+    'network/:network/add': 'addNode'
 
   initialize: (options) ->
     @networks = options.networks
@@ -24,6 +25,7 @@ class window.noflo.Router extends Backbone.Router
       # The view will handle rendering necessary subviews for nodes, edges, etc
       networkView = new window.noflo.views.Network
         model: network
+        app: @
       @rootElement.html networkView.render().el
 
       # Activate the graph editor after insertion
@@ -42,3 +44,15 @@ class window.noflo.Router extends Backbone.Router
       success: ->
         todo--
         do display if todo is 0
+
+  addNode: (id) ->
+    network = @networks.get id
+
+    network.get('components').fetch
+      success: =>
+        view = new window.noflo.views.AddNode
+          collection: network.get 'components'
+          app: @
+          model: network
+        @rootElement.html view.render().el
+

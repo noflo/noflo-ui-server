@@ -35,8 +35,9 @@ exports.index = (req, res) ->
   res.send nodes
 
 exports.create = (req, res) ->
-  unless req.body.id and req.body.component
-    return res.send "Missing ID or component definition", 422
+  unless req.body.component
+    return res.send "Missing component definition", 422
+  req.body.id = req.body.component unless req.body.id
 
   req.network.graph.addNode req.body.id, req.body.component, req.body.display
   res.header 'Location', "/network/#{req.network.id}/node/#{req.body.id}"

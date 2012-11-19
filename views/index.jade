@@ -6,13 +6,17 @@ html(lang="en")
     != css('noflo')
     != js('noflo')
     script#NetworkListItem(type="text/html")
-      li.span4
-        div.thumbnail
-          h2 <%= name %>
-          button.edit.btn Edit
+      div.thumbnail
+        h2 <%= name %>
+        button.edit.btn Edit
     script#Node(type="text/html")
       h4 <%= id %>
       p.component <%= component %>
+    script#AddNodeComponent(type="text/html")
+      div.thumbnail
+        h3 <%= name %>
+        p <%= description %>
+        button.use.btn Use
   body
     div.navbar.navbar-fixed-top
       div.navbar-inner
