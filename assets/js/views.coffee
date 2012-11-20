@@ -99,7 +99,9 @@ class views.Network extends Backbone.View
   graphClicked: (event) ->
     do @removePopover
     return unless event.target is @el
-    @getPopover event.offsetY, event.offsetX
+    y = event.pageY - @$el.offset().top
+    x = event.pageX - @$el.offset().left
+    @getPopover y, x
 
   addNode: ->
     x = @popover.css('top').replace 'px', ''
