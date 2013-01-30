@@ -140,7 +140,7 @@ class views.Network extends Backbone.View
     # We need this for DnD
     document.onselectstart = -> false
 
-    jsPlumb.Defaults.Connector = "Bezier"
+    jsPlumb.Defaults.Connector = "StateMachine"
     jsPlumb.Defaults.PaintStyle =
       strokeStyle: "#33B5E5"
       outlineWidth: 1
@@ -248,8 +248,8 @@ class views.AddNodeComponent extends Backbone.View
     @
 
 class views.Node extends Backbone.View
-  inAnchors: ["LeftMiddle", "TopLeft", "BottomLeft"]
-  outAnchors: ["RightMiddle", "TopRight", "BottomRight"]
+  inAnchors: ["LeftMiddle", "TopLeft", "BottomLeft", "TopCenter"]
+  outAnchors: ["RightMiddle", "BottomRight", "TopRight", "BottomCenter"]
   inPorts: null
   outPorts: null
   template: '#Node'
