@@ -1,5 +1,6 @@
 #= require vendor/jquery
 #= require vendor/jquery-ui
+#= require vendor/jquery.ui.touch-punch
 #= require vendor/jsplumb
 #= require vendor/underscore
 #= require vendor/backbone
