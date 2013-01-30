@@ -143,12 +143,13 @@ class views.Network extends Backbone.View
     jsPlumb.Defaults.Connector = "Bezier"
     jsPlumb.Defaults.PaintStyle =
       strokeStyle: "#33B5E5"
-      lineWidth: 3
+      outlineWidth: 1
+      outlineColor: '#000000'
+      lineWidth: 2
     jsPlumb.Defaults.DragOptions =
       cursor: "pointer"
       zIndex: 2000
     jsPlumb.Defaults.ConnectionOverlays = [
-      [ "PlainArrow" ]
     ]
     jsPlumb.setRenderMode jsPlumb.SVG
 
