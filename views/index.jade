@@ -3,26 +3,11 @@ html(lang="en")
   head
     title NoFlo UI
     != css('vendor/bootstrap')
+    != css('vendor/bootstrap-responsive')
     != css('noflo')
     != js('noflo')
-    script#NetworkListItem(type="text/html")
-      div.thumbnail
-        h2 <%= name %>
-        button.edit.btn Edit
-    script#Node(type="text/html")
-      h4 <%= id %>
-      p.component <%= component %>
-    script#NetworkPopover(type="text/html")
-      div
-        button.addnode.btn Node
-    script#AddNodeComponent(type="text/html")
-      div.thumbnail
-        h3 <%= name %>
-        p <%= description %>
-        button.use.btn Use
+    meta(name="viewport", content="width=device-width, initial-scale=1.0")
+    include GraphManager
+    include GraphEditor
   body
-    div.navbar.navbar-fixed-top
-      div.navbar-inner
-        div.container
-          h1 NoFlo UI
     div#noflo
