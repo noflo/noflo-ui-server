@@ -1,8 +1,9 @@
 express = require 'express'
 assets = require 'connect-assets'
 resource = require 'express-resource'
+noflo = require 'noflo'
 
-exports.createServer = (callback) ->
+exports.createServer = (projectDir, callback) ->
   app = express()
 
   app.set 'view engine', 'jade'
@@ -10,10 +11,13 @@ exports.createServer = (callback) ->
   #app.use express.logger()
   app.use express.bodyParser()
 
+  componentLoader = new noflo.ComponentLoader projectDir
+
   # Expose networks to resources
-  app.networks = []
+  app.graphs = []
   app.use (req, res, next) ->
-    req.networks = app.networks
+    req.graphs = app.graphs
+    req.componentLoader = componentLoader
     next()
 
   # Asset pipeline for CoffeeScript and other files
@@ -25,13 +29,13 @@ exports.createServer = (callback) ->
       console.log err if err
       res.send html
 
-
-  networks = app.resource 'network', require './resource/network'
+  graphs = app.resource 'graph', require './resource/graph'
   nodes = app.resource 'node', require './resource/node'
-  networks.add nodes
+  graphs.add nodes
   edges = app.resource 'edge', require './resource/edge'
-  networks.add edges
+  graphs.add edges
   components = app.resource 'component', require './resource/component'
-  networks.add components
+  graphs.add components
 
-  callback app
+  componentLoader.listComponents (components) ->
+    callback null, app

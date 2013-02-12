@@ -1,27 +1,26 @@
-prepareNetwork = (network, id) ->
-  clean =
-    id: id
-    name: network.graph.name
-    started: network.startupDate
+prepareGraph = (graph) ->
+  clean = graph.toJSON()
+  clean.id = graph.id
+  clean.name = graph.id
   clean
 
 exports.load = (req, id, callback) ->
-  for network, netId in req.networks
-    continue unless netId is parseInt id
-    network.id = netId
-    return callback null, network
+  for graph in req.graphs
+    continue unless graph.id is id
+    return callback null, graph
   return callback 'not found', null
   
 exports.index = (req, res) ->
-  networks = []
-  networks.push prepareNetwork network, id for network, id in req.networks
-  res.send networks
+  clean = []
+  for graph in req.graphs
+    clean.push prepareGraph graph
+  res.send clean
 
 exports.create = (req, res) ->
   res.send 404
 
 exports.show = (req, res) ->
-  res.send prepareNetwork req.network, req.network.id
+  res.send prepareGraph req.graph
 
 exports.update = (req, res) ->
   res.send 404

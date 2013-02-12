@@ -5,7 +5,7 @@ class models.Network extends Backbone.Model
   defaults:
     nodes: null
 
-  url: -> "/network/#{@id}"
+  url: -> "/graph/#{@id}"
 
   initialize: (attributes) ->
     attributes ?= {}
@@ -19,7 +19,7 @@ class models.Network extends Backbone.Model
 class models.Networks extends Backbone.Collection
   model: models.Network
 
-  url: "/network"
+  url: "/graph"
 
 class models.Initial extends Backbone.Model
 
@@ -32,7 +32,7 @@ class models.Components extends Backbone.Collection
   initialize: (models, options) ->
     @network = options?.network
 
-  url: -> "/network/#{@network.id}/component"
+  url: -> "/graph/#{@network.id}/component"
 
 class models.Node extends Backbone.Model
   defaults:
@@ -68,7 +68,7 @@ class models.Nodes extends Backbone.Collection
   initialize: (models, options) ->
     @network = options?.network
 
-  url: -> "/network/#{@network.id}/node"
+  url: -> "/graph/#{@network.id}/node"
 
 class models.Port extends Backbone.Model
   node: null
@@ -102,4 +102,4 @@ class models.Edges extends Backbone.Collection
   initialize: (models, options) ->
     @network = options?.network
 
-  url: -> "/network/#{@network.id}/edge"
+  url: -> "/graph/#{@network.id}/edge"

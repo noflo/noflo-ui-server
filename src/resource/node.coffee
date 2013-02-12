@@ -1,20 +1,22 @@
 noflo = require 'noflo'
+{_} = require 'underscore'
 
-prepareNode = (node, network) ->
-  process = network.getNode node.id
+prepareNode = (node, loader, callback) ->
+  loader.load node.component, (instance) ->
+    unless instance.isReady()
+      instance.once 'ready', ->
+        prepareNode node, loader, callback
+      return
+    node.inPorts = []
+    node.outPorts = []
+    for name, port of instance.inPorts
+      node.inPorts.push preparePort port, name
+    for name, port of instance.outPorts
+      node.outPorts.push preparePort port, name
 
-  node.subgraph = process.component.isSubgraph()
-
-  node.inPorts = []
-  node.outPorts = []
-  for name, port of process.component.inPorts
-    node.inPorts.push preparePort port, name
-  for name, port of process.component.outPorts
-    node.outPorts.push preparePort port, name
-
-  # TODO: Use stringex to handle all necessary replacements
-  node.cleanId = node.id.replace ' ', '_'
-  node
+    # TODO: Use stringex to handle all necessary replacements
+    node.cleanId = node.id.replace ' ', '_'
+    callback null, node
 
 preparePort = (port, name) ->
   cleanPort =
@@ -25,32 +27,42 @@ preparePort = (port, name) ->
   cleanPort
 
 exports.load = (req, id, callback) ->
-  for node in req.network.graph.nodes
-    return callback null, node if node.id is id
+  for node in req.graph.nodes
+    continue unless node.id is id
+    prepareNode node, req.componentLoader, callback
   return callback 'not found', null
   
 exports.index = (req, res) ->
   nodes = []
-  nodes.push prepareNode node, req.network for node in req.network.graph.nodes
-  res.send nodes
+  todo = req.graph.nodes.length
+  _.each req.graph.nodes, (node) ->
+    prepareNode node, req.componentLoader, (err, clean) ->
+      todo--
+      nodes.push clean
+      return if todo
+      res.send nodes
 
 exports.create = (req, res) ->
   unless req.body.component
     return res.send "Missing component definition", 422
   req.body.id = req.body.component unless req.body.id
 
-  node = req.network.graph.addNode req.body.id, req.body.component, req.body.display
-  res.send prepareNode node, req.network
+  node = req.graph.addNode req.body.id, req.body.component, req.body.display
+  prepareNode node, req.componentLoader, (err, clean) ->
+    res.send clean
 
 exports.show = (req, res) ->
-  res.send prepareNode req.node, req.network
+  prepareNode req.node, req.componentLoader, (err, clean) ->
+    res.send clean
 
 exports.update = (req, res) ->
   unless req.body.display
     return res.send "Missing display settings", 422
   req.node.display = req.body.display
-  res.send prepareNode req.node, req.network
+  prepareNode req.node, req.componentLoader, (err, clean) ->
+    res.send clean
 
 exports.destroy = (req, res) ->
-  req.network.graph.removeNode req.node.id
-  res.send prepareNode req.node, req.network
+  req.graph.removeNode req.node.id
+  prepareNode req.node, req.componentLoader, (err, clean) ->
+    res.send clean
