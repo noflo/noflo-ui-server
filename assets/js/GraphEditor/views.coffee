@@ -1,60 +1,35 @@
 window.noflo = {} unless window.noflo
-window.noflo.views = views = {}
+window.noflo.GraphEditor = {} unless window.noflo.GraphEditor
 
-class views.NetworkList extends Backbone.View
-  app: null
-  tagName: 'ul'
-  className: 'thumbnails'
+views = window.noflo.GraphEditor.views = {}
 
-  initialize: (options) ->
-    @app = options?.app
-    @collection = options?.collection
-    _.bindAll @, 'renderItems'
-    @collection.bind 'reset add remove', @renderItems
-    @
-
-  render: ->
-    @$el.empty()
-    @renderItems()
-    @
-
-  renderItems: ->
-    @collection.each @renderItem, @
-
-  renderItem: (network) ->
-    view = new views.NetworkListItem
-      model: network
-      app: @app
-    @$el.append view.render().el
-
-class views.NetworkListItem extends Backbone.View
-  app: null
-  template: '#NetworkListItem'
-  tagName: 'li'
-  className: 'span4'
-
-  events:
-    'click button.edit': 'editClicked'
+class views.Graph extends Backbone.View
+  editor: null
+  editorView: null
+  template: '#Graph'
+  router: null
 
   initialize: (options) ->
-    @app = options?.app
-
-  editClicked: ->
-    @app.navigate "#network/#{@model.id}", true
+    @router = options.router
 
   render: ->
     template = jQuery(@template).html()
-
-    networkData = @model.toJSON()
-    networkData.name = "Network #{@model.id}" unless networkData.name
-
-    @$el.html _.template template, networkData
+    graphData = @model.toJSON()
+    graphData.name = "graph #{@model.id}" unless graphData.name
+    @$el.html _.template template, graphData
     @
 
-class views.Network extends Backbone.View
+  initializeEditor: ->
+    @editorView = new views.GraphEditor
+      model: @model
+      app: @router
+    container = jQuery '.editor', @el
+    container.html @editorView.render().el
+    @editorView.activate()
+
+class views.GraphEditor extends Backbone.View
   nodeViews: null
   edgeViews: null
-  initialViews: null
   className: 'graph'
   popoverTemplate: '#NetworkPopover'
 
@@ -64,7 +39,6 @@ class views.Network extends Backbone.View
 
   initialize: (options) ->
     @nodeViews = {}
-    @initialViews = []
     @edgeViews = []
     @app = options?.app
     @popover = null
@@ -122,15 +96,12 @@ class views.Network extends Backbone.View
 
   renderEdges: ->
     @model.get('edges').each (edge) ->
-      @renderInitial edge unless edge.get('from').node
       @renderEdge edge
     , @
 
   activate: ->
     @initializePlumb()
     _.each @nodeViews, (view) ->
-      view.activate()
-    _.each @initialViews, (view) ->
       view.activate()
     _.each @edgeViews, (view) ->
       view.activate()
@@ -182,17 +153,6 @@ class views.Network extends Backbone.View
       networkView: @
     @$el.append view.render().el
     @nodeViews[node.id] = view
-
-  renderInitial: (edge) ->
-    # IIP, render the data node as well
-    iip = new window.noflo.models.Initial
-      data: edge.get('from').data
-      to: edge.get('to')
-    view = new views.Initial
-      model: iip
-      networkView: @
-    @$el.append view.render().el
-    @initialViews.push view
 
   renderEdge: (edge) ->
     view = new views.Edge
@@ -401,12 +361,7 @@ class views.Edge extends Backbone.View
     if sourceDef.node
       source = @networkView.nodeViews[sourceDef.node].outPorts[sourceDef.port].endPoint
     else
-      for initialView in @networkView.initialViews
-        to = initialView.model.get 'to'
-        continue unless to.node is targetDef.node and to.port is targetDef.port
-        continue if initialView.outEndpoint.endPoint.isFull()
-        source = initialView.outEndpoint.endPoint
-
+      return
     target = @networkView.nodeViews[targetDef.node].inPorts[targetDef.port].endPoint
     @connection = jsPlumb.connect
       source: source

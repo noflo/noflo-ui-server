@@ -1,7 +1,7 @@
 window.noflo = {} unless window.noflo
 window.noflo.models = models = {}
 
-class models.Network extends Backbone.Model
+class models.Graph extends Backbone.Model
   defaults:
     nodes: null
 
@@ -10,14 +10,14 @@ class models.Network extends Backbone.Model
   initialize: (attributes) ->
     attributes ?= {}
     this.set 'nodes', new models.Nodes attributes.nodes,
-      network: @
+      graph: @
     this.set 'edges', new models.Edges attributes.edges,
-      network: @
+      graph: @
     this.set 'components', new models.Components attributes.components,
-      network: @
+      graph: @
 
-class models.Networks extends Backbone.Collection
-  model: models.Network
+class models.Graphs extends Backbone.Collection
+  model: models.Graph
 
   url: "/graph"
 
@@ -27,12 +27,12 @@ class models.Component extends Backbone.Model
 
 class models.Components extends Backbone.Collection
   model: models.Component
-  network: null
+  graph: null
 
   initialize: (models, options) ->
-    @network = options?.network
+    @graph = options?.graph
 
-  url: -> "/graph/#{@network.id}/component"
+  url: -> "/graph/#{@graph.id}/component"
 
 class models.Node extends Backbone.Model
   defaults:
@@ -63,12 +63,12 @@ class models.Node extends Backbone.Model
 
 class models.Nodes extends Backbone.Collection
   model: models.Node
-  network: null
+  graph: null
 
   initialize: (models, options) ->
-    @network = options?.network
+    @graph = options?.graph
 
-  url: -> "/graph/#{@network.id}/node"
+  url: -> "/graph/#{@graph.id}/node"
 
 class models.Port extends Backbone.Model
   node: null
@@ -97,9 +97,9 @@ class models.Edge extends Backbone.Model
 
 class models.Edges extends Backbone.Collection
   model: models.Edge
-  network: null
+  graph: null
 
   initialize: (models, options) ->
-    @network = options?.network
+    @graph = options?.graph
 
-  url: -> "/graph/#{@network.id}/edge"
+  url: -> "/graph/#{@graph.id}/edge"

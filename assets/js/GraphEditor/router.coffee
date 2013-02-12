@@ -1,35 +1,46 @@
-window.noflo = {} unless window.noflo
+#= require ../vendor/jquery-ui
+#= require ../vendor/jquery.ui.touch-punch
+#= require ../vendor/jsplumb
+#= require views
 
-class window.noflo.Router extends Backbone.Router
-  networks: null
+class window.noflo.GraphEditor.Router extends Backbone.Router
+  graphs: null
+  root: null
 
   routes:
-    '':         'index'
-    'network/:network': 'network'
-    'network/:network/add': 'addNode'
-    'network/:network/add/:x/:y': 'addNodePositioned'
+    'graph/:network': 'graph'
 
   initialize: (options) ->
-    @networks = options.networks
-    @rootElement = jQuery '#noflo'
+    @graphs = options.graphs
+    @root = options.root
+    jsPlumb.setRenderMode jsPlumb.CANVAS
 
-  index: ->
-    networksView = new window.noflo.views.NetworkList
-      app: @
-      collection: @networks
-    @rootElement.html networksView.render().el
+  graph: (id) ->
+    graph = @graphs.get id
+    return @navigate '', true unless graph
+
+    view = new window.noflo.GraphEditor.views.Graph
+      model: graph
+      graphs: @graphs
+      router: @
+    @root.html view.render().el
+
+    # Fetch full graph information and activate view
+    done = _.after 3, -> view.initializeEditor()
+    graph.get('nodes').fetch success: done
+    graph.get('edges').fetch success: done
+    graph.fetch success: done
 
   network: (id) ->
     network = @networks.get id
 
     display = =>
       # The view will handle rendering necessary subviews for nodes, edges, etc
-      networkView = new window.noflo.views.Network
+      networkView = new window.noflo.views.Graph
         model: network
         app: @
       @rootElement.html networkView.render().el
 
-      # Activate the graph editor after insertion
       networkView.activate()
 
     todo = 3
