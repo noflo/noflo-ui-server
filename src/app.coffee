@@ -23,6 +23,7 @@ exports.createServer = (projectDir, callback) ->
   # Asset pipeline for CoffeeScript and other files
   app.use assets
     src: "#{__dirname}/../assets"
+  app.use '/img', express.static "#{__dirname}/../assets/img"
 
   app.get '/', (req, res) ->
     res.render 'index', {}, (err, html) ->
