@@ -56,19 +56,3 @@ class window.noflo.GraphEditor.Router extends Backbone.Router
       success: ->
         todo--
         do display if todo is 0
-
-  addNode: (id, display) ->
-    network = @networks.get id
-    network.get('components').fetch
-      success: =>
-        view = new window.noflo.views.AddNode
-          collection: network.get 'components'
-          app: @
-          model: network
-          display: display
-        @rootElement.html view.render().el
-
-  addNodePositioned: (id, x, y) ->
-    @addNode id,
-      x: parseInt x
-      y: parseInt y

@@ -13,6 +13,7 @@ class views.Graph extends Backbone.View
     @router = options.router
 
   render: ->
+    jQuery('body').addClass 'grapheditor'
     template = jQuery(@template).html()
     graphData = @model.toJSON()
     graphData.name = "graph #{@model.id}" unless graphData.name
@@ -161,52 +162,6 @@ class views.GraphEditor extends Backbone.View
     view.render()
     @edgeViews.push view
 
-class views.AddNode extends Backbone.View
-  tagName: 'ul'
-  className: 'thumbnails'
-
-  initialize: (options) ->
-    @app = options?.app
-    @collection = options?.collection
-    @display = options?.display
-
-  render: ->
-    @$el.empty()
-    @collection.each @renderComponent, @
-    @
-
-  renderComponent: (component) ->
-    view = new views.AddNodeComponent
-      model: component
-      app: @app
-      network: @model
-      display: @display
-    @$el.append view.render().el
-
-class views.AddNodeComponent extends Backbone.View
-  template: '#AddNodeComponent'
-  tagName: 'li'
-  className: 'span4'
-
-  events:
-    'click button.use': 'useClicked'
-
-  initialize: (options) ->
-    @app = options?.app
-    @network = options?.network
-    @display = options?.display
-
-  useClicked: ->
-    @network.get('nodes').create
-      component: @model.get 'name'
-      display: @display
-    @app.navigate "#network/#{@network.id}", true
-
-  render: ->
-    template = jQuery(@template).html()
-    @$el.html _.template template, @model.toJSON()
-    @
-
 class views.Node extends Backbone.View
   inAnchors: ["LeftMiddle", "TopLeft", "BottomLeft", "TopCenter"]
   outAnchors: ["RightMiddle", "BottomRight", "TopRight", "BottomCenter"]
@@ -268,30 +223,6 @@ class views.Node extends Backbone.View
 
   saveModel: ->
     @model.save()
-
-class views.Initial extends Backbone.View
-  tagName: 'div'
-  className: 'initial'
-
-  render: ->
-    @$el.html @model.get 'data'
-    @renderOutport()
-    @
-
-  renderOutport: ->
-    view = new views.Port
-      model: new window.noflo.models.Port
-      inPort: false
-      nodeView: @
-      anchor: "BottomCenter"
-    view.render()
-    @outEndpoint = view
-
-  activate: ->
-    @makeDraggable()
-    @outEndpoint.activate()
-
-  saveModel: ->
 
 class views.Port extends Backbone.View
   endPoint: null
@@ -381,4 +312,3 @@ views.DraggableMixin =
     @saveModel()
 
 _.extend views.Node::, views.DraggableMixin
-_.extend views.Initial::, views.DraggableMixin

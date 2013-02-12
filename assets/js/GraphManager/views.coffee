@@ -17,6 +17,7 @@ class views.GraphList extends Backbone.View
     @
 
   render: ->
+    jQuery('body').removeClass 'grapheditor'
     template = jQuery(@template).html()
     @$el.html template
     @renderItems()
