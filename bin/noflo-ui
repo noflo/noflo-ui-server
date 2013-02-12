@@ -1,0 +1,18 @@
+#!/usr/bin/env coffee
+# vim: set filetype=coffee:
+path = require 'path'
+app = require '../src/app'
+project = require '../src/project'
+
+unless process.argv.length is 3
+  console.log "Usage: $ noflo-ui my/project/path"
+  process.exit 0
+
+projectDir = path.resolve process.cwd(), process.argv[2]
+
+app.createServer projectDir, (err, server) ->
+  return console.error err if err
+  project.getGraphs projectDir, (err, graphs) ->
+    return console.error err if err
+    server.graphs.push graph for graph in graphs
+    server.listen 3000
