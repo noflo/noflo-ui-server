@@ -2,6 +2,7 @@ express = require 'express'
 assets = require 'connect-assets'
 resource = require 'express-resource'
 noflo = require 'noflo'
+path = require 'path'
 
 exports.createServer = (projectDir, callback) ->
   app = express()
@@ -37,6 +38,13 @@ exports.createServer = (projectDir, callback) ->
   graphs.add edges
   components = app.resource 'component', require './resource/component'
   graphs.add components
+
+  # Add saving capability
+  graphs.map 'post', 'commit', (req, res) ->
+    dir = path.dirname req.graph.fileName
+    name = path.basename req.graph.fileName, path.extname req.graph.fileName
+    req.graph.save "#{dir}/#{name}", (file) ->
+      res.end '200'
 
   componentLoader.listComponents (components) ->
     callback null, app

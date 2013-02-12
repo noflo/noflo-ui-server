@@ -28,6 +28,7 @@ exports.getGraphs = (projectDir, callback) ->
       noflo.graph.loadFile localPath, (graph) ->
         todo--
         graph.id = graphName
+        graph.fileName = localPath
         graph.baseDir = projectDir
         graphs.push graph
         return if todo
