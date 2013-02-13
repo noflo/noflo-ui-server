@@ -9,8 +9,14 @@ class views.Graph extends Backbone.View
   template: '#Graph'
   router: null
 
+  events:
+    'click #save': 'save'
+
   initialize: (options) ->
     @router = options.router
+
+  save: ->
+    jQuery.post "#{@model.url()}/commit"
 
   render: ->
     jQuery('body').addClass 'grapheditor'
