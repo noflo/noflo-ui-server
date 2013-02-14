@@ -30,29 +30,3 @@ class window.noflo.GraphEditor.Router extends Backbone.Router
     graph.get('nodes').fetch success: done
     graph.get('edges').fetch success: done
     graph.fetch success: done
-
-  network: (id) ->
-    network = @networks.get id
-
-    display = =>
-      # The view will handle rendering necessary subviews for nodes, edges, etc
-      networkView = new window.noflo.views.Graph
-        model: network
-        app: @
-      @rootElement.html networkView.render().el
-
-      networkView.activate()
-
-    todo = 3
-    network.get('nodes').fetch
-      success: ->
-        todo--
-        do display if todo is 0
-    network.get('edges').fetch
-      success: ->
-        todo--
-        do display if todo is 0
-    network.fetch
-      success: ->
-        todo--
-        do display if todo is 0

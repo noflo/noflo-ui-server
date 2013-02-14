@@ -14,6 +14,7 @@ class views.Graph extends Backbone.View
 
   initialize: (options) ->
     @router = options.router
+    @graphs = options.graphs
 
   save: ->
     jQuery.post "#{@model.url()}/commit"
@@ -24,7 +25,20 @@ class views.Graph extends Backbone.View
     graphData = @model.toJSON()
     graphData.name = "graph #{@model.id}" unless graphData.name
     @$el.html _.template template, graphData
+    @showGraphs()
     @
+
+  showGraphs: ->
+    container = jQuery '.nav .dropdown .graphs', @el
+    container.empty()
+    @graphs.each (graph) ->
+      template = jQuery('#GraphPullDown').html()
+      graphData =
+        name: graph.get 'name'
+        url: "#graph/#{graph.id}"
+      html = jQuery _.template template, graphData
+      jQuery('a', html).attr 'href', graphData.url
+      container.append html
 
   initializeEditor: ->
     @editorView = new views.GraphEditor
