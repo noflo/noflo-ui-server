@@ -1,6 +1,8 @@
 #= require ../vendor/jquery-ui
 #= require ../vendor/jquery.ui.touch-punch
 #= require ../vendor/jsplumb
+#= require ../vendor/codemirror
+#= require ../vendor/codemirror-coffeescript
 #= require views
 
 class window.noflo.GraphEditor.Router extends Backbone.Router
@@ -12,6 +14,7 @@ class window.noflo.GraphEditor.Router extends Backbone.Router
   routes:
     'graph/:network': 'graph'
     'graph/:network/node/:id': 'node'
+    'graph/:network/component/:id': 'component'
 
   initialize: (options) ->
     @graphs = options.graphs
@@ -65,7 +68,30 @@ class window.noflo.GraphEditor.Router extends Backbone.Router
       model: node
       onRemove: =>
         @navigate "#graph/#{graphId}", true
+      onEdit: =>
+        @navigate "#graph/#{graphId}/component/#{node.get('component')}", true
     node.fetch
       success: =>
         @panel.html view.render().el
         @panel.show()
+
+  component: (graphId, componentId) ->
+    graph = @graphs.get graphId
+    return @navigate '', true unless graph
+
+    if @editor is null or @editor.model.id isnt graphId
+      # Render the graph editor
+      @graph graphId
+
+    components = graph.get 'components'
+    components.fetch
+      success: =>
+        component = components.get componentId
+        return @navigate '', true unless component
+        component.fetch
+          success: =>
+            view = new window.noflo.GraphEditor.views.Component
+              model: component
+            @panel.html view.render().el
+            @panel.show()
+            view.initializeEditor()

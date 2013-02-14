@@ -11,22 +11,32 @@ script#Graph(type="text/html")
         ul.nav.pull-right
           a#save.btn Save
   div.editor
+
 script#Node(type="text/html")
   h1 <%= name %>
   p Component: <%= component %>
   div.btn-toolbar
     button.btn.remove Remove node
-    button.btn Edit component
+    button.btn.edit Edit component
+
+script#Component(type="text/html")
+  h1 <%= name %>
+  p <%= description %>
+  textarea <%= code %>
+
 script#GraphPullDown(type="text/html")
   li
     a
       <%= name %>
+
 script#GraphNode(type="text/html")
   h4 <%= id %>
   p.component <%= component %>
+
 script#NetworkPopover(type="text/html")
   div
     button.addnode.btn Node
+
 script#AddNodeComponent(type="text/html")
   div.thumbnail
     h3 <%= name %>

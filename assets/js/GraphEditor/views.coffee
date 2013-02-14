@@ -60,9 +60,11 @@ class views.Node extends Backbone.View
 
   initialize: (options) ->
     @onRemove = options.onRemove
+    @onEdit = options.onEdit
 
   events:
     'click button.remove': 'removeNode'
+    'click button.edit': 'editComponent'
 
   render: ->
     template = jQuery(@template).html()
@@ -75,6 +77,24 @@ class views.Node extends Backbone.View
     @model.destroy
       success: =>
         @onRemove()
+
+  editComponent: ->
+    @onEdit()
+
+class views.Component extends Backbone.View
+  template: '#Component'
+
+  render: ->
+    template = jQuery(@template).html()
+    nodeData = @model.toJSON()
+    nodeData.name = @model.id unless nodeData.name
+    @$el.html _.template template, nodeData
+    @
+
+  initializeEditor: ->
+    code = jQuery('textarea', @el).get 0
+    @editor = CodeMirror.fromTextArea code,
+      theme: 'lesser-dark'
 
 class views.GraphEditor extends Backbone.View
   nodeViews: null
