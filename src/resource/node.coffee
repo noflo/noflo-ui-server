@@ -33,16 +33,13 @@ exports.load = (req, id, callback) ->
   for node in req.graph.nodes
     continue unless node.id is id
     prepareNode node, req.componentLoader, callback
-  return callback 'not found', null
   
 exports.index = (req, res) ->
-  console.log "IDX", req.graph.nodes
   nodes = []
   todo = req.graph.nodes.length
   return res.send nodes if todo.length is 0
   _.each req.graph.nodes, (node) ->
     prepareNode node, req.componentLoader, (err, clean) ->
-      console.log err, clean, todo
       todo--
       nodes.push clean
       return if todo
