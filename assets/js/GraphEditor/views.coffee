@@ -32,6 +32,7 @@ class views.Graph extends Backbone.View
     container = jQuery '.nav .dropdown .graphs', @el
     container.empty()
     @graphs.each (graph) ->
+      return if graph.id is @model.id
       template = jQuery('#GraphPullDown').html()
       graphData =
         name: graph.get 'name'
@@ -39,6 +40,7 @@ class views.Graph extends Backbone.View
       html = jQuery _.template template, graphData
       jQuery('a', html).attr 'href', graphData.url
       container.append html
+    , @
 
   initializeEditor: ->
     @editorView = new views.GraphEditor
