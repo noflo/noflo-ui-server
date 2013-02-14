@@ -222,6 +222,7 @@ class views.GraphNode extends Backbone.View
 
   clicked: (event) ->
     event.stopPropagation()
+    return if @beingDragged
     @openNode @model
 
   render: ->
@@ -348,16 +349,26 @@ class views.GraphEdge extends Backbone.View
       target: target
 
 views.DraggableMixin =
+  beingDragged: false
+
   makeDraggable: ->
     jsPlumb.draggable @el,
-      stop: (event, data) => @dragStop data
+      start: (event, data) => @dragStart event, data
+      stop: (event, data) => @dragStop event, data
     @
 
-  dragStop: (data) ->
+  dragStart: (event, data) ->
+    @beingDragged = true
+
+  dragStop: (event, data) ->
     @model.set
       display:
         x: data.offset.top
         y: data.offset.left
     @saveModel()
+
+    setTimeout =>
+      @beingDragged = false
+    , 1
 
 _.extend views.GraphNode::, views.DraggableMixin
