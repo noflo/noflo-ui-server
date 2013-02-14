@@ -15,6 +15,8 @@ class views.Graph extends Backbone.View
   initialize: (options) ->
     @router = options.router
     @graphs = options.graphs
+    @openNode = options.openNode
+    @closeNode = options.closeNode
 
   save: ->
     jQuery.post "#{@model.url()}/commit"
@@ -46,9 +48,21 @@ class views.Graph extends Backbone.View
     @editorView = new views.GraphEditor
       model: @model
       app: @router
+      openNode: @openNode
+      closeNode: @closeNode
+      
     container = jQuery '.editor', @el
     container.html @editorView.render().el
     @editorView.activate()
+
+class views.Node extends Backbone.View
+  template: '#Node'
+  render: ->
+    template = jQuery(@template).html()
+    nodeData = @model.toJSON()
+    nodeData.name = @model.id unless nodeData.name
+    @$el.html _.template template, nodeData
+    @
 
 class views.GraphEditor extends Backbone.View
   nodeViews: null
@@ -65,6 +79,8 @@ class views.GraphEditor extends Backbone.View
     @edgeViews = []
     @app = options?.app
     @popover = null
+    @openNode = options.openNode
+    @closeNode = options.closeNode
 
     _.bindAll @, 'renderNodes', 'renderEdges', 'renderEdge'
     @model.get('nodes').bind 'reset', @renderNodes
@@ -94,6 +110,8 @@ class views.GraphEditor extends Backbone.View
     @popover = target
 
   graphClicked: (event) ->
+    @closeNode()
+    return
     do @removePopover
     return unless event.target is @el
     y = event.pageY - @$el.offset().top
@@ -171,31 +189,40 @@ class views.GraphEditor extends Backbone.View
         edgeView.model.destroy()
 
   renderNode: (node) ->
-    view = new views.Node
+    view = new views.GraphNode
       model: node
       networkView: @
+      openNode: @openNode
     @$el.append view.render().el
     @nodeViews[node.id] = view
 
   renderEdge: (edge) ->
-    view = new views.Edge
+    view = new views.GraphEdge
       model: edge
       networkView: @
     view.render()
     @edgeViews.push view
 
-class views.Node extends Backbone.View
+class views.GraphNode extends Backbone.View
   inAnchors: ["LeftMiddle", "TopLeft", "BottomLeft", "TopCenter"]
   outAnchors: ["RightMiddle", "BottomRight", "TopRight", "BottomCenter"]
   inPorts: null
   outPorts: null
-  template: '#Node'
+  template: '#GraphNode'
   tagName: 'div'
   className: 'process'
+
+  events:
+    'click': 'clicked'
 
   initialize: (options) ->
     @inPorts = {}
     @outPorts = {}
+    @openNode = options.openNode
+
+  clicked: (event) ->
+    event.stopPropagation()
+    @openNode @model
 
   render: ->
     @$el.attr 'id', @model.get 'cleanId'
@@ -219,7 +246,7 @@ class views.Node extends Backbone.View
     @
 
   renderInport: (port, index) ->
-    view = new views.Port
+    view = new views.GraphPort
       model: port
       inPort: true
       nodeView: @
@@ -228,7 +255,7 @@ class views.Node extends Backbone.View
     @inPorts[port.get('name')] = view
 
   renderOutport: (port, index) ->
-    view = new views.Port
+    view = new views.GraphPort
       model: port
       inPort: false
       nodeView: @
@@ -246,7 +273,7 @@ class views.Node extends Backbone.View
   saveModel: ->
     @model.save()
 
-class views.Port extends Backbone.View
+class views.GraphPort extends Backbone.View
   endPoint: null
   inPort: false
   anchor: "LeftMiddle"
@@ -292,7 +319,7 @@ class views.Port extends Backbone.View
       portOptions.maxConnections = -1
     @endPoint = jsPlumb.addEndpoint @nodeView.el, portOptions, @portDefaults
 
-class views.Edge extends Backbone.View
+class views.GraphEdge extends Backbone.View
   networkView: null
   connection: null
 
@@ -333,4 +360,4 @@ views.DraggableMixin =
         y: data.offset.left
     @saveModel()
 
-_.extend views.Node::, views.DraggableMixin
+_.extend views.GraphNode::, views.DraggableMixin

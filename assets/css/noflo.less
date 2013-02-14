@@ -11,6 +11,11 @@ body {
   font-family: 'Droid Sans', sans-serif;
 }
 
+.navbar-fixed-top .navbar-inner {
+  padding-left: 60px;
+  padding-right: 60px;
+}
+
 body.grapheditor {
   background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAI0lEQVQYV2NkYGD4D8R4gaCgIAPjqEJcYURa8ABVEwxwkE0AJg0L/3bkmgQAAAAASUVORK5CYII=');
 }
@@ -87,4 +92,13 @@ div.initial {
 
 ._jsPlumb_connector path {
   -webkit-filter: drop-shadow( -5px -5px 5px #000 );
+}
+
+div.panel {
+  position: fixed;
+  top: 60px;
+  right: 60px;
+  width: 26%;
+  height: 80%;
+  z-index: 200;
 }

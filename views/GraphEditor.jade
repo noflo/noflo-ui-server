@@ -1,7 +1,6 @@
 script#Graph(type="text/html")
   div.navbar.navbar-fixed-top
     div.navbar-inner
-      div.container
         a.brand(href="#")
           img(src="/img/noflo.png", alt="NoFlo")
         ul.nav
@@ -12,11 +11,17 @@ script#Graph(type="text/html")
         ul.nav.pull-right
           a#save.btn Save
   div.editor
+script#Node(type="text/html")
+  h1 <%= name %>
+  p Component: <%= component %>
+  div.btn-toolbar
+    button.btn Remove node
+    button.btn Edit component
 script#GraphPullDown(type="text/html")
   li
     a
       <%= name %>
-script#Node(type="text/html")
+script#GraphNode(type="text/html")
   h4 <%= id %>
   p.component <%= component %>
 script#NetworkPopover(type="text/html")
