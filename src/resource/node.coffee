@@ -5,18 +5,21 @@ prepareNode = (node, loader, callback) ->
   loader.load node.component, (instance) ->
     unless instance.isReady()
       instance.once 'ready', ->
-        prepareNode node, loader, callback
+        cleanNode node, instance, callback
       return
-    node.inPorts = []
-    node.outPorts = []
-    for name, port of instance.inPorts
-      node.inPorts.push preparePort port, name
-    for name, port of instance.outPorts
-      node.outPorts.push preparePort port, name
+    cleanNode node, instance, callback
 
-    # TODO: Use stringex to handle all necessary replacements
-    node.cleanId = node.id.replace ' ', '_'
-    callback null, node
+cleanNode = (node, instance, callback) ->
+  node.inPorts = []
+  node.outPorts = []
+  for name, port of instance.inPorts
+    node.inPorts.push preparePort port, name
+  for name, port of instance.outPorts
+    node.outPorts.push preparePort port, name
+
+  # TODO: Use stringex to handle all necessary replacements
+  node.cleanId = node.id.replace ' ', '_'
+  callback null, node
 
 preparePort = (port, name) ->
   cleanPort =
@@ -33,10 +36,13 @@ exports.load = (req, id, callback) ->
   return callback 'not found', null
   
 exports.index = (req, res) ->
+  console.log "IDX", req.graph.nodes
   nodes = []
   todo = req.graph.nodes.length
+  return res.send nodes if todo.length is 0
   _.each req.graph.nodes, (node) ->
     prepareNode node, req.componentLoader, (err, clean) ->
+      console.log err, clean, todo
       todo--
       nodes.push clean
       return if todo
