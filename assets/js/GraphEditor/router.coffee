@@ -63,6 +63,8 @@ class window.noflo.GraphEditor.Router extends Backbone.Router
       return
     view = new window.noflo.GraphEditor.views.Node
       model: node
+      onRemove: =>
+        @navigate "#graph/#{graphId}", true
     node.fetch
       success: =>
         @panel.html view.render().el

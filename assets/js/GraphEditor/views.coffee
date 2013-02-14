@@ -57,12 +57,24 @@ class views.Graph extends Backbone.View
 
 class views.Node extends Backbone.View
   template: '#Node'
+
+  initialize: (options) ->
+    @onRemove = options.onRemove
+
+  events:
+    'click button.remove': 'removeNode'
+
   render: ->
     template = jQuery(@template).html()
     nodeData = @model.toJSON()
     nodeData.name = @model.id unless nodeData.name
     @$el.html _.template template, nodeData
     @
+
+  removeNode: ->
+    @model.destroy
+      success: =>
+        @onRemove()
 
 class views.GraphEditor extends Backbone.View
   nodeViews: null
