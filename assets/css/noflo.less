@@ -20,6 +20,29 @@ body.grapheditor {
   background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAI0lEQVQYV2NkYGD4D8R4gaCgIAPjqEJcYURa8ABVEwxwkE0AJg0L/3bkmgQAAAAASUVORK5CYII=');
 }
 
+@highdensity: ~"only screen and (-webkit-min-device-pixel-ratio: 1.5)",
+              ~"only screen and (min--moz-device-pixel-ratio: 1.5)",
+              ~"only screen and (-o-min-device-pixel-ratio: 3/2)",
+              ~"only screen and (min-device-pixel-ratio: 1.5)";
+
+body.grapheditor .navbar h1 {
+  width: 52px;
+  height: 20px;
+  background-image: url('/img/noflo.png');
+  @media @highdensity {
+    background-image: url('/img/noflo@2X.png');
+  }
+  background-size: 52px 20px;
+  background-position: top right;
+  background-repeat: no-repeat;
+  margin: 0px;
+  padding: 0px;
+}
+
+body.grapheditor .navbar h1 span {
+  display: none;
+}
+
 div.graph {
   position: absolute;
   top: 60px;
