@@ -10,15 +10,21 @@ script#Graph(type="text/html")
           ul.dropdown-menu.graphs
             li Foo
         ul.nav.pull-right
-          a#save.btn Save
+          a#save.btn
+            i.icon-cloud-upload
+            span  Save
   div.editor
 
 script#Node(type="text/html")
   h1 <%= name %>
   p Component: <%= component %>
   div.btn-toolbar
-    button.btn.remove Remove node
-    button.btn.edit Edit component
+    button.btn.remove
+      i.icon-remove
+      span  Remove node
+    button.btn.edit
+      i.icon-edit
+      span  Edit component
 
 script#Component(type="text/html")
   h1 <%= name %>
