@@ -14,7 +14,8 @@ class window.noflo.GraphEditor.Router extends Backbone.Router
   routes:
     'graph/:network': 'graph'
     'graph/:network/node/:id': 'node'
-    'graph/:network/component/:id': 'component'
+    'graph/:network/component/:id': 'coreComponent'
+    'graph/:network/component/:package/:id': 'component'
 
   initialize: (options) ->
     @graphs = options.graphs
@@ -75,7 +76,11 @@ class window.noflo.GraphEditor.Router extends Backbone.Router
         @panel.html view.render().el
         @panel.show()
 
-  component: (graphId, componentId) ->
+  coreComponent: (graphId, componentId) ->
+    @component graphId, null, componentId
+
+  component: (graphId, packageId, componentId) ->
+    componentId = "#{packageId}/#{componentId}" if packageId
     graph = @graphs.get graphId
     return @navigate '', true unless graph
 
