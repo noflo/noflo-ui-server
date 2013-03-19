@@ -12,7 +12,7 @@ script#Graph(type="text/html")
         ul.nav.pull-right
           a#save.btn
             i.icon-cloud-upload
-            span  Save
+            span.hidden-phone  Save
   div.editor
 
 script#Node(type="text/html")
@@ -21,10 +21,10 @@ script#Node(type="text/html")
   div.btn-toolbar
     button.btn.remove
       i.icon-remove
-      span  Remove node
+      span.hidden-phone  Remove node
     button.btn.edit
       i.icon-edit
-      span  Edit component
+      span.hidden-phone  Edit component
 
 script#Component(type="text/html")
   h1 <%= name %>
