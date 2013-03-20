@@ -1,5 +1,8 @@
 fs = require 'fs'
 {_} = require 'underscore'
+docco = require 'docco'
+marked = require 'marked'
+{highlight} = require 'highlight.js'
 
 prepareComponent = (component, instance, callback) ->
   unless instance.isReady()
@@ -15,8 +18,21 @@ prepareComponent = (component, instance, callback) ->
   clean.outPorts = _.keys instance.outPorts if instance.outPorts
   callback null, clean
 
-exports.index = (req, res) ->
-  req.componentLoader.listComponents (components) ->
+documentComponent = (sourceFile, sourceCode) ->
+  chunks = docco.parse sourceFile, sourceCode
+  html = ''
+  for chunk in chunks
+    code = highlight('coffeescript', chunk.codeText).value
+    code = code.replace(/\s+$/, '')
+    chunk.codeHtml = "<div class='highlight'><pre>#{code}</pre></div>"
+    chunk.docsHtml = marked(chunk.docsText)
+    html += "<section>"
+    html += chunk.docsHtml
+    html += chunk.codeHtml
+    html += "</section>"
+  html
+
+exports.index = (req, res) -> req.componentLoader.listComponents (components) ->
     clean = []
     sendComponents = _.after _.keys(components).length, ->
       res.send clean
@@ -38,4 +54,5 @@ exports.show = (req, res) ->
     fs.readFile components[req.component.id], 'utf-8', (err, code) ->
       return res.send 500 if err
       req.component.code = code
+      req.component.doc = documentComponent components[req.component.id], code
       res.send req.component
