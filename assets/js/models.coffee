@@ -1,11 +1,23 @@
 window.noflo = {} unless window.noflo
 window.noflo.models = models = {}
 
+class models.Project extends Backbone.Model
+  url: -> "/project/#{@id}"
+
+  initialize: (attributes) ->
+    attributes ?= {}
+    this.set 'components', new models.Components attributes.components,
+      project: @
+    this.set 'graphs', new models.Graphs attributes.graphs,
+      project: @
+
+class models.Projects extends Backbone.Collection
+  model: models.Project
+  url: '/project'
+
 class models.Graph extends Backbone.Model
   defaults:
     nodes: null
-
-  url: -> "/graph/#{@id}"
 
   initialize: (attributes) ->
     attributes ?= {}
@@ -13,26 +25,35 @@ class models.Graph extends Backbone.Model
       graph: @
     this.set 'edges', new models.Edges attributes.edges,
       graph: @
-    this.set 'components', new models.Components attributes.components,
-      graph: @
+
+  url: ->
+    return @collection.url() unless @id
+    "#{@collection.url()}/#{@id}"
 
 class models.Graphs extends Backbone.Collection
   model: models.Graph
+  project: null
 
-  url: "/graph"
+  initialize: (models, options) ->
+    @project = options?.project
+
+  url: -> "/project/#{@project.id}/graph"
 
 class models.Initial extends Backbone.Model
 
 class models.Component extends Backbone.Model
+  url: ->
+    return @collection.url() unless @id
+    "#{@collection.url()}/#{@id}"
 
 class models.Components extends Backbone.Collection
   model: models.Component
-  graph: null
+  project: null
 
   initialize: (models, options) ->
-    @graph = options?.graph
+    @project = options?.project
 
-  url: -> "/graph/#{@graph.id}/component"
+  url: -> "/project/#{@project.id}/component"
 
 class models.Node extends Backbone.Model
   defaults:
@@ -68,7 +89,7 @@ class models.Nodes extends Backbone.Collection
   initialize: (models, options) ->
     @graph = options?.graph
 
-  url: -> "/graph/#{@graph.id}/node"
+  url: -> "#{@graph.url()}/node"
 
 class models.Port extends Backbone.Model
   node: null
@@ -102,4 +123,4 @@ class models.Edges extends Backbone.Collection
   initialize: (models, options) ->
     @graph = options?.graph
 
-  url: -> "/graph/#{@graph.id}/edge"
+  url: -> "#{@graph.url()}/edge"

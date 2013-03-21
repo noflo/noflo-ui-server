@@ -10,16 +10,23 @@ window.noflo = {} unless window.noflo
 
 jQuery(document).ready ->
   rootElement = jQuery '#noflo'
-
-  graphs = new window.noflo.models.Graphs
-  graphs.fetch
+  projects = new window.noflo.models.Projects
+  projects.fetch
     success: ->
-      manager = new window.noflo.GraphManager.Router
-        graphs: graphs
-        root: rootElement
-      editor = new window.noflo.GraphEditor.Router
-        graphs: graphs
-        root: rootElement
-      do Backbone.history.start
+      project = projects.at 0
+      graphs = project.get 'graphs'
+      graphs.fetch
+        success: ->
+          manager = new window.noflo.GraphManager.Router
+            project: project
+            graphs: graphs
+            root: rootElement
+          editor = new window.noflo.GraphEditor.Router
+            project: project
+            graphs: graphs
+            root: rootElement
+          do Backbone.history.start
+        error: ->
+          jQuery('#noflo').empty().append jQuery('<div>Failed to fetch graphs</div>')
     error: ->
-      jQuery('#noflo').empty().append jQuery('<div>Failed to fetch networks</div>')
+      jQuery('#noflo').empty().append jQuery('<div>Failed to fetch projects</div>')

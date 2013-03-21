@@ -9,7 +9,7 @@ exports.createServer = (projectData, callback) ->
 
   app.set 'view engine', 'jade'
 
-  #app.use express.logger()
+  app.use express.logger()
   app.use express.bodyParser()
 
   componentLoader = new noflo.ComponentLoader projectData.localDir
@@ -32,13 +32,15 @@ exports.createServer = (projectData, callback) ->
       console.log err if err
       res.send html
 
+  projects = app.resource 'project', require './resource/project'
+  components = app.resource 'component', require './resource/component'
+  projects.add components
   graphs = app.resource 'graph', require './resource/graph'
+  projects.add graphs
   nodes = app.resource 'node', require './resource/node'
   graphs.add nodes
   edges = app.resource 'edge', require './resource/edge'
   graphs.add edges
-  components = app.resource 'component', require './resource/component'
-  graphs.add components
 
   # Add saving capability
   graphs.map 'post', 'commit', (req, res) ->

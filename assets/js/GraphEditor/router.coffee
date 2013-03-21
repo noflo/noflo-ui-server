@@ -6,6 +6,7 @@
 #= require views
 
 class window.noflo.GraphEditor.Router extends Backbone.Router
+  project: null
   graphs: null
   root: null
   panel: null
@@ -18,6 +19,7 @@ class window.noflo.GraphEditor.Router extends Backbone.Router
     'graph/:network/component/:package/:id': 'component'
 
   initialize: (options) ->
+    @project = options.project
     @graphs = options.graphs
     @root = options.root
     @panel = jQuery '.panel', 'body'
@@ -88,7 +90,7 @@ class window.noflo.GraphEditor.Router extends Backbone.Router
       # Render the graph editor
       @graph graphId
 
-    components = graph.get 'components'
+    components = @project.get 'components'
     components.fetch
       success: =>
         component = components.get componentId

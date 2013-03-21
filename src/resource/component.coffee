@@ -32,7 +32,8 @@ documentComponent = (sourceFile, sourceCode) ->
     html += "</section>"
   html
 
-exports.index = (req, res) -> req.componentLoader.listComponents (components) ->
+exports.index = (req, res) ->
+  req.componentLoader.listComponents (components) ->
     clean = []
     sendComponents = _.after _.keys(components).length, ->
       res.send clean
