@@ -3,18 +3,19 @@
 views = window.noflo.GraphManager.views
 
 class window.noflo.GraphManager.Router extends Backbone.Router
-  graphs: null
+  project: null
   root: null
 
   routes:
     '': 'index'
 
   initialize: (options) ->
-    @graphs = options.graphs
+    @project = options.project
     @root = options.root
 
   index: ->
     graphsView = new views.GraphList
       app: @
-      collection: @graphs
+      model: @project
+      collection: @project.get 'graphs'
     @root.html graphsView.render().el

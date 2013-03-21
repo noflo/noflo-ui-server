@@ -1,0 +1,22 @@
+@highdensity: ~"only screen and (-webkit-min-device-pixel-ratio: 1.5)",
+              ~"only screen and (min--moz-device-pixel-ratio: 1.5)",
+              ~"only screen and (-o-min-device-pixel-ratio: 3/2)",
+              ~"only screen and (min-device-pixel-ratio: 1.5)";
+
+body .container {
+  margin-top: 60px;
+}
+
+i.icon-noflo {
+  width: 52px;
+  height: 20px;
+  background-image: url('/img/noflo.png');
+  @media @highdensity {
+    background-image: url('/img/noflo@2X.png');
+  }
+  background-size: 52px 20px;
+  background-position: top right;
+  background-repeat: no-repeat;
+  margin: 0px;
+  padding: 0px;
+}

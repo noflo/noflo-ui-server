@@ -1,3 +1,5 @@
+#= require ../vendor/actionbar
+
 window.noflo = {} unless window.noflo
 window.noflo.GraphManager = {} unless window.noflo.GraphManager
 
@@ -8,19 +10,32 @@ class views.GraphList extends Backbone.View
   template: '#GraphList'
   tagName: 'div'
   className: 'container'
+  actionBar: null
 
   initialize: (options) ->
     @app = options?.app
     @collection = options?.collection
-    _.bindAll @, 'renderItems'
-    @collection.bind 'reset add remove', @renderItems
+    @listenTo @model, 'change', @render
+    @listenTo @collection, 'reset add remove', @renderItems
+    @prepareActionBar()
     @
+
+  prepareActionBar: ->
+    @actionBar = new ActionBar
+      control:
+        icon: 'noflo'
+        label: @model.get 'name'
 
   render: ->
     jQuery('body').removeClass 'grapheditor'
     template = jQuery(@template).html()
-    @$el.html template
+
+    projectData = @model.toJSON()
+    projectData.description = '' unless projectData.description
+
+    @$el.html _.template template, projectData
     @renderItems()
+    @actionBar.show()
     @
 
   renderItems: ->
@@ -37,10 +52,10 @@ class views.GraphListItem extends Backbone.View
   app: null
   template: '#GraphListItem'
   tagName: 'li'
-  className: 'span4'
+  className: 'span3'
 
   events:
-    'click button.edit': 'editClicked'
+    'click': 'editClicked'
 
   initialize: (options) ->
     @app = options?.app

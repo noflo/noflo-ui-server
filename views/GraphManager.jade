@@ -1,8 +1,8 @@
 script#GraphList(type="text/html")
   div.container
-    h1 NoFlo
+    p.lead <%= description %>
+    h2 Graphs
     ul.thumbnails.graphs
 script#GraphListItem(type="text/html")
   div.thumbnail
-    h2 <%= name %>
-    button.edit.btn Edit
+    p <%= name %>
