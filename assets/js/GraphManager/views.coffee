@@ -31,13 +31,7 @@ class views.Project extends Backbone.View
 
     projectData = @model.toJSON()
     projectData.description = '' unless projectData.description
-    projectData.graphCount = @model.get('graphs').length
-    projectData.nodeCount = @model.get('graphs').reduce (nodes, graph) ->
-      nodes += graph.get 'nodeCount'
-    , 0
-    projectData.totalComponents = @model.get('components').length
-    projectData.componentCount = @model.get('components').where({ project: @model.get('name') }).length
-    projectData.externalComponents = projectData.totalComponents - projectData.componentCount
+    _.extend projectData, @countStats()
 
     @$el.html _.template template, projectData
 
@@ -45,6 +39,23 @@ class views.Project extends Backbone.View
     @renderComponents()
     @actionBar.show()
     @
+
+  countStats: ->
+    stats =
+      graphCount: @model.get('graphs').length
+      nodeCount: @model.get('graphs').reduce (nodes, graph) ->
+        nodes += graph.get 'nodeCount'
+      , 0
+      totalComponents: @model.get('components').where(
+        subgraph: false
+      ).length
+      componentCount: @model.get('components').where(
+        project: @model.get('name')
+        subgraph: false
+      ).length
+
+    stats.externalComponents = stats.totalComponents - stats.componentCount
+    stats
 
   renderGraphs: ->
     view = new views.GraphList
@@ -125,6 +136,7 @@ class views.ComponentList extends Backbone.View
     @collection.each @addComponent, @
 
   addComponent: (component) ->
+    return if component.get('subgraph')
     return unless component.get('project') is @project.get('name')
     view = new views.ComponentListItem
       model: component

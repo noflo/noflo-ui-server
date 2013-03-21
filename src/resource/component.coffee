@@ -22,6 +22,7 @@ prepareComponent = (component, instance, callback) ->
     name: componentName
     project: project
     description: instance.description
+    subgraph: instance.isSubgraph()
   clean.inPorts = _.keys instance.inPorts if instance.inPorts
   clean.outPorts = _.keys instance.outPorts if instance.outPorts
   callback null, clean
