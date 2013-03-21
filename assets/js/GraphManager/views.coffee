@@ -90,6 +90,7 @@ class views.GraphList extends Backbone.View
       app: @app
     @views[graph.cid] = view
     @$el.append view.render().el
+    view.drawCanvas()
 
   removeGraph: (graph) ->
     return unless @views[graph.cid]
@@ -119,6 +120,24 @@ class views.GraphListItem extends Backbone.View
 
     @$el.html _.template template, graphData
     @
+
+  drawCanvas: ->
+    @model.get('nodes').fetch
+      success: =>
+        canvas = jQuery('canvas', this.el).get 0
+        scale = 0.10
+        context = canvas.getContext '2d'
+        context.fillStyle = "33B5E5"
+        @model.get('nodes').each (node) ->
+          top = 0
+          left = 0
+          if node.has 'display'
+            top = node.get('display').y * scale
+            left = node.get('display').x * scale
+          context.fillRect top, left, 8, 4
+
+      error: (e) ->
+        alert e
 
 class views.ComponentList extends Backbone.View
   views: {}
