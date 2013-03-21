@@ -12,7 +12,11 @@ script#Project(type="text/html")
   ul.thumbnails.components
 script#GraphListItem(type="text/html")
   div.thumbnail
-    p <%= name %>
+    h3 <%= name %>
+    p <%= nodeCount %> nodes
 script#ComponentListItem(type="text/html")
   div.thumbnail
-    p <%= name %>
+    h3 <%= name %>
+    ul.inports.pull-left <% _.each(inPorts, function(port) { %> <li><%= port %></li> <% }); %>
+    ul.outports.pull-right <% _.each(outPorts, function(port) { %> <li><%= port %></li> <% }); %>
+    span.clearfix
