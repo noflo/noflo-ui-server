@@ -10,9 +10,17 @@ prepareComponent = (component, instance, callback) ->
       prepareComponent component, instance, callback
     return
 
+  project = 'noflo'
+  componentName = component
+  nameParts = component.split '/'
+  if nameParts.length is 2
+    project = nameParts[0]
+    componentName = nameParts[1]
+
   clean =
     id: component
-    name: component
+    name: componentName
+    project: project
     description: instance.description
   clean.inPorts = _.keys instance.inPorts if instance.inPorts
   clean.outPorts = _.keys instance.outPorts if instance.outPorts

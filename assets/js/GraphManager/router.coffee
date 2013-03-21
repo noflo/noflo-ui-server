@@ -14,8 +14,10 @@ class window.noflo.GraphManager.Router extends Backbone.Router
     @root = options.root
 
   index: ->
-    graphsView = new views.GraphList
-      app: @
-      model: @project
-      collection: @project.get 'graphs'
-    @root.html graphsView.render().el
+    show = _.after 2, =>
+      graphsView = new views.Project
+        app: @
+        model: @project
+      @root.html graphsView.render().el
+    @project.get('graphs').fetch success: show
+    @project.get('components').fetch success: show

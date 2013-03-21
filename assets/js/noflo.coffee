@@ -14,19 +14,14 @@ jQuery(document).ready ->
   projects.fetch
     success: ->
       project = projects.at 0
-      graphs = project.get 'graphs'
-      graphs.fetch
-        success: ->
-          manager = new window.noflo.GraphManager.Router
-            project: project
-            graphs: graphs
-            root: rootElement
-          editor = new window.noflo.GraphEditor.Router
-            project: project
-            graphs: graphs
-            root: rootElement
-          do Backbone.history.start
-        error: ->
-          jQuery('#noflo').empty().append jQuery('<div>Failed to fetch graphs</div>')
+      manager = new window.noflo.GraphManager.Router
+        project: project
+        root: rootElement
+      ###
+      editor = new window.noflo.GraphEditor.Router
+        project: project
+        root: rootElement
+      ###
+      do Backbone.history.start
     error: ->
       jQuery('#noflo').empty().append jQuery('<div>Failed to fetch projects</div>')

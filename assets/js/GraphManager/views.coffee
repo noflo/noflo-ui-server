@@ -5,18 +5,17 @@ window.noflo.GraphManager = {} unless window.noflo.GraphManager
 
 views = window.noflo.GraphManager.views = {}
 
-class views.GraphList extends Backbone.View
+class views.Project extends Backbone.View
   app: null
-  template: '#GraphList'
+  template: '#Project'
   tagName: 'div'
   className: 'container'
   actionBar: null
 
   initialize: (options) ->
     @app = options?.app
-    @collection = options?.collection
     @listenTo @model, 'change', @render
-    @listenTo @collection, 'reset add remove', @renderItems
+    @listenTo @model.get('graphs'), 'reset', @render
     @prepareActionBar()
     @
 
@@ -32,21 +31,48 @@ class views.GraphList extends Backbone.View
 
     projectData = @model.toJSON()
     projectData.description = '' unless projectData.description
+    projectData.graphCount = @model.get('graphs').length
+    projectData.nodeCount = @model.get('graphs').reduce (nodes, graph) ->
+      nodes += graph.get 'nodeCount'
+    , 0
 
     @$el.html _.template template, projectData
-    @renderItems()
+
+    @renderGraphs()
     @actionBar.show()
     @
 
-  renderItems: ->
-    @collection.each @renderItem, @
+  renderGraphs: ->
+    view = new views.GraphList
+      el: jQuery '.graphs', @el
+      collection: @model.get 'graphs'
+    view.render()
 
-  renderItem: (graph) ->
-    container = jQuery '.graphs', @el
+class views.GraphList extends Backbone.View
+  views: {}
+
+  initialize: (options) ->
+    @app = options.app
+    @collection = options.collection
+    @listenTo @collection, 'add', @addGraph
+    @listenTo @collection, 'remove', @removeGraph
+    @listenTo @collection, 'reset', @render
+
+  render: ->
+    @$el.empty()
+    @collection.each @addGraph, @
+
+  addGraph: (graph) ->
     view = new views.GraphListItem
       model: graph
       app: @app
-    container.append view.render().el
+    @views[graph.cid] = view
+    @$el.append view.render().el
+
+  removeGraph: (graph) ->
+    return unless @views[graph.cid]
+    @views[graph.cid].$el.remove()
+    delete @views[graph.cid]
 
 class views.GraphListItem extends Backbone.View
   app: null
@@ -71,4 +97,3 @@ class views.GraphListItem extends Backbone.View
 
     @$el.html _.template template, graphData
     @
-

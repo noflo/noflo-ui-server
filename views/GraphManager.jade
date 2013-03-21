@@ -1,8 +1,16 @@
-script#GraphList(type="text/html")
-  div.container
-    p.lead <%= description %>
-    h2 Graphs
-    ul.thumbnails.graphs
+script#Project(type="text/html")
+  p.lead <%= description %>
+  div.page-header
+    h1
+      span Graphs
+      small  <%= graphCount %> graphs containing <%= nodeCount %> nodes
+  ul.thumbnails.graphs
+  div.page-header
+    h1 Components
+  ul.thumbnails.components
 script#GraphListItem(type="text/html")
+  div.thumbnail
+    p <%= name %>
+script#ComponentListItem(type="text/html")
   div.thumbnail
     p <%= name %>

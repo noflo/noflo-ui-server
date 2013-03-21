@@ -2,6 +2,7 @@ prepareGraph = (graph) ->
   clean = graph.toJSON()
   clean.id = graph.id
   clean.name = graph.id
+  clean.nodeCount = graph.nodes.length
   clean
 
 exports.load = (req, id, callback) ->
