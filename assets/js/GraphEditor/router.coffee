@@ -15,17 +15,11 @@ class window.noflo.GraphEditor.Router extends Backbone.Router
   routes:
     'graph/:network': 'graph'
     'graph/:network/node/:id': 'node'
-    'graph/:network/component/:id': 'coreComponent'
-    'graph/:network/component/:package/:id': 'component'
 
   initialize: (options) ->
     @project = options.project
     @root = options.root
-    @panel = jQuery '.panel', 'body'
     jsPlumb.setRenderMode jsPlumb.CANVAS
-
-    Backbone.history.on 'route', =>
-      @panel.hide()
 
   prepareGraph: (graph, callback) ->
     done = _.after 3, -> callback graph
@@ -34,8 +28,11 @@ class window.noflo.GraphEditor.Router extends Backbone.Router
     graph.fetch success: done
 
   graph: (id) ->
-    console.log "HELLO"
-    return if @editor and @editor.model.id is id
+    if @project.get('graphs').length is 0
+      @project.get('graphs').fetch
+        success: =>
+          @graph id
+      return
 
     graph = @project.get('graphs').get id
     return @navigate '', true unless graph

@@ -8,6 +8,7 @@ class views.Graph extends Backbone.View
   editorView: null
   template: '#Graph'
   router: null
+  actionBar: null
 
   events:
     'click #save': 'save'
@@ -17,6 +18,13 @@ class views.Graph extends Backbone.View
     @graphs = options.graphs
     @openNode = options.openNode
     @closeNode = options.closeNode
+    @prepareActionBar()
+
+  prepareActionBar: ->
+    @actionBar = new ActionBar
+      control:
+        label: @model.get 'name'
+        icon: 'noflo'
 
   save: ->
     jQuery.post "#{@model.url()}/commit"
@@ -28,6 +36,7 @@ class views.Graph extends Backbone.View
     graphData.name = "graph #{@model.id}" unless graphData.name
     @$el.html _.template template, graphData
     @showGraphs()
+    @actionBar.show()
     @
 
   showGraphs: ->
