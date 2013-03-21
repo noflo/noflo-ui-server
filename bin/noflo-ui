@@ -9,10 +9,17 @@ unless process.argv.length is 3
   process.exit 0
 
 projectDir = path.resolve process.cwd(), process.argv[2]
+port = 3000
 
-app.createServer projectDir, (err, server) ->
+project.readProject projectDir, (err, projectData) ->
   return console.error err if err
-  project.getGraphs projectDir, (err, graphs) ->
+
+  app.createServer projectDir, (err, server) ->
     return console.error err if err
-    server.graphs.push graph for graph in graphs
-    server.listen 3000
+
+    project.getGraphs projectData, (err, graphs) ->
+      return console.error err if err
+
+      server.graphs.push graph for graph in graphs
+      server.listen port, (err) ->
+        console.log "NoFlo listening at port #{port}"

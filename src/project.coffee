@@ -13,23 +13,33 @@ exports.readPackage = (projectDir, callback) ->
     catch e
       return callback e
 
-exports.getGraphs = (projectDir, callback) ->
+exports.readProject = (projectDir, callback) ->
   exports.readPackage projectDir, (err, projectData) ->
     return callback err if err
     unless projectData.noflo
-      callback new Error 'No NoFlo definitions found for project'
-    unless projectData.noflo.graphs
-      callback null, {}
-    
-    graphs = []
-    todo = _.keys(projectData.noflo.graphs).length
-    _.each projectData.noflo.graphs, (graphPath, graphName) ->
-      localPath = path.resolve projectDir, graphPath
-      noflo.graph.loadFile localPath, (graph) ->
-        todo--
-        graph.id = graphName
-        graph.fileName = localPath
-        graph.baseDir = projectDir
-        graphs.push graph
-        return if todo
-        callback null, graphs
+      return callback new Error 'No NoFlo definitions found for project'
+
+    projectData.localDir = projectDir
+
+    callback null, projectData
+
+exports.readGraphs = (projectDir, callback) ->
+  exports.readProject projectDir, (err, projectData) ->
+    return callback err if err
+    exports.getGraphs projectData, callback
+
+exports.getGraphs = (projectData, callback) ->
+  unless projectData.noflo.graphs
+    return callback null, []
+  graphs = []
+  returnGraphs = _.after _.keys(projectData.noflo.graphs).length, ->
+    callback null, graphs
+  todo = _.keys(projectData.noflo.graphs).length
+  _.each projectData.noflo.graphs, (graphPath, graphName) ->
+    localPath = path.resolve projectData.localDir, graphPath
+    noflo.graph.loadFile localPath, (graph) ->
+      graph.id = graphName
+      graph.fileName = localPath
+      graph.baseDir = projectData.localDir
+      graphs.push graph
+      do returnGraphs
