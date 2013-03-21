@@ -4,7 +4,7 @@ resource = require 'express-resource'
 noflo = require 'noflo'
 path = require 'path'
 
-exports.createServer = (projectDir, callback) ->
+exports.createServer = (projectData, callback) ->
   app = express()
 
   app.set 'view engine', 'jade'
@@ -12,13 +12,14 @@ exports.createServer = (projectDir, callback) ->
   #app.use express.logger()
   app.use express.bodyParser()
 
-  componentLoader = new noflo.ComponentLoader projectDir
+  componentLoader = new noflo.ComponentLoader projectData.localDir
 
   # Expose networks to resources
   app.graphs = []
   app.use (req, res, next) ->
     req.graphs = app.graphs
     req.componentLoader = componentLoader
+    req.project = projectData
     next()
 
   # Asset pipeline for CoffeeScript and other files
