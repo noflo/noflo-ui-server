@@ -6,7 +6,9 @@ script#Project(type="text/html")
       small  <%= graphCount %> graphs containing <%= nodeCount %> nodes
   ul.thumbnails.graphs
   div.page-header
-    h1 Components
+    h1
+      span Components
+      small  <%= componentCount %> components from project, <%= externalComponents %> from external libraries
   ul.thumbnails.components
 script#GraphListItem(type="text/html")
   div.thumbnail

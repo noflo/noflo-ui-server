@@ -1,7 +1,7 @@
 prepareProject = (projectData) ->
   clean =
     id: projectData.name
-    name: projectData.name
+    name: projectData.name.replace 'noflo-', ''
     description: projectData.description
   clean
 
