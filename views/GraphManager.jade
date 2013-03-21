@@ -17,6 +17,7 @@ script#GraphListItem(type="text/html")
 script#ComponentListItem(type="text/html")
   div.thumbnail
     h3 <%= name %>
+    p <%= description %>
     ul.inports.pull-left <% _.each(inPorts, function(port) { %> <li><%= port %></li> <% }); %>
     ul.outports.pull-right <% _.each(outPorts, function(port) { %> <li><%= port %></li> <% }); %>
     span.clearfix
