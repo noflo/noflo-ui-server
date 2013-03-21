@@ -20,7 +20,6 @@ class window.noflo.GraphEditor.Router extends Backbone.Router
 
   initialize: (options) ->
     @project = options.project
-    @graphs = options.graphs
     @root = options.root
     @panel = jQuery '.panel', 'body'
     jsPlumb.setRenderMode jsPlumb.CANVAS
@@ -35,14 +34,15 @@ class window.noflo.GraphEditor.Router extends Backbone.Router
     graph.fetch success: done
 
   graph: (id) ->
+    console.log "HELLO"
     return if @editor and @editor.model.id is id
 
-    graph = @graphs.get id
+    graph = @project.get('graphs').get id
     return @navigate '', true unless graph
 
     view = new window.noflo.GraphEditor.views.Graph
       model: graph
-      graphs: @graphs
+      graphs: @project.get 'graphs'
       router: @
       openNode: (node) =>
         @navigate "#graph/#{id}/node/#{node.id}", true

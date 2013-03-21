@@ -61,6 +61,7 @@ class views.Project extends Backbone.View
     view = new views.GraphList
       el: jQuery '.graphs', @el
       collection: @model.get 'graphs'
+      app: @app
     view.render()
 
   renderComponents: ->
@@ -68,6 +69,7 @@ class views.Project extends Backbone.View
       el: jQuery '.components', @el
       collection: @model.get 'components'
       project: @model
+      app: @app
     view.render()
 
 class views.GraphList extends Backbone.View

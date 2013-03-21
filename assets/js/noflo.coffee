@@ -17,11 +17,9 @@ jQuery(document).ready ->
       manager = new window.noflo.GraphManager.Router
         project: project
         root: rootElement
-      ###
       editor = new window.noflo.GraphEditor.Router
         project: project
         root: rootElement
-      ###
       do Backbone.history.start
     error: ->
       jQuery('#noflo').empty().append jQuery('<div>Failed to fetch projects</div>')
