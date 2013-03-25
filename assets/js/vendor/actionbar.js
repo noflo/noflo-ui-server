@@ -106,9 +106,45 @@
     $actions: null,
     context: null,
 
+    events: {
+      'click .control-up': 'handleUp',
+      'click .control-icon': 'handleIcon',
+      'click .control-label': 'handleLabel'
+    },
+
     initialize: function (options) {
       this.listenTo(this.model.get('control'), 'change', this.renderControl);
       this.context = options.context;
+    },
+
+    handleUp: function (event) {
+      event.preventDefault();
+      if (this.model.get('control').get('disabled')) {
+       return;
+      }
+      if (!this.model.get('control').get('up')) {
+        return;
+      }
+      this.model.get('control').get('up').call(this.context);
+    },
+
+    handleIcon: function (event) {
+      if (this.model.get('control').get('up')) {
+        this.handleUp(event);
+        return;
+      }
+      this.handleLabel(event);
+    },
+
+    handleLabel: function (event) {
+      event.preventDefault();
+      if (this.model.get('control').get('disabled')) {
+       return;
+      }
+      if (!this.model.get('control').get('action')) {
+        return;
+      }
+      this.model.get('control').get('action').call(this.context);
     },
 
     render: function () {
@@ -123,19 +159,26 @@
     },
 
     renderControl: function () {
+      if (!this.model.get('control')) {
+        return;
+      }
       if (!this.$control) {
         this.$control = Backbone.$('<a>');
         this.$control.addClass('brand');
         this.$inner.prepend(this.$control);
       }
       var icon = this.model.get('control').get('icon');
+      var up = this.model.get('control').get('up');
       var label = this.model.get('control').get('label');
       this.$control.empty();
+      if (up) {
+        this.$control.append(Backbone.$('<i class="control-up icon-chevron-left"></i>'));
+      }
       if (icon) {
-        this.$control.append(Backbone.$('<i class="icon-' + icon + '"></i>'));
+        this.$control.append(Backbone.$('<i class="control-icon icon-' + icon + '"></i>'));
       }
       if (label) {
-        this.$control.append(' ' + label);
+        this.$control.append('<span class="control-label"> ' + label + '</span>');
       }
     },
 
@@ -164,6 +207,22 @@
     $actions: null,
     context: null,
 
+    events: {
+      'click .control-icon': 'handleControl',
+      'click .control-label': 'handleControl'
+    },
+
+    handleControl: function (event) {
+      event.preventDefault();
+      if (this.model.get('control').get('disabled')) {
+       return;
+      }
+      if (!this.model.get('control').get('action')) {
+        return;
+      }
+      this.model.get('control').get('action').call(this.context);
+    },
+
     initialize: function (options) {
       this.listenTo(this.model.get('control'), 'change', this.renderControl);
       this.context = options.context;
@@ -189,10 +248,10 @@
       var label = this.model.get('control').get('label');
       this.$control.empty();
       if (icon) {
-        this.$control.append(Backbone.$('<i class="icon-' + icon + '"></i>'));
+        this.$control.append(Backbone.$('<i class="control-icon icon-' + icon + '"></i>'));
       }
       if (label) {
-        this.$control.append(' ' + label);
+        this.$control.append('<span class="control-label"> ' + label + '</span>');
       }
     },
 

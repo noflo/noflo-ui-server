@@ -25,6 +25,13 @@ class views.Graph extends Backbone.View
       control:
         label: @model.get 'name'
         icon: 'noflo'
+      actions: [
+        id: 'save'
+        label: 'Save'
+        icon: 'upload'
+        action: @save
+      ]
+    , @
 
   save: ->
     jQuery.post "#{@model.url()}/commit"
