@@ -64,7 +64,6 @@ class views.EditComponent extends Backbone.View
     template = jQuery(@template).html()
     componentData = @model.toJSON()
     componentData.name = @model.id unless componentData.name
-    componentData.test = ''
     @$el.html _.template template, componentData
     @actionBar.show()
     @

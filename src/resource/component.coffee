@@ -1,4 +1,5 @@
 fs = require 'fs'
+path = require 'path'
 {_} = require 'underscore'
 docco = require 'docco'
 marked = require 'marked'
@@ -58,11 +59,32 @@ exports.load = (req, id, callback) ->
     req.componentLoader.load id, (instance) ->
       prepareComponent id, instance, callback
 
+readSources = (sourceFile, callback) ->
+  source = ''
+  tests = ''
+  done = _.after 2, ->
+    callback
+      source: source
+      tests: tests
+  fs.readFile sourceFile, 'utf-8', (err, contents) ->
+    source = contents if contents
+    done()
+
+  # Check if we have tests for the component
+  testFile = path.resolve sourceFile, "../../test/#{path.basename(sourceFile)}"
+  console.log testFile
+  fs.exists testFile, (exists) ->
+    return done() unless exists
+    fs.readFile testFile, 'utf-8', (err, contents) ->
+      tests = contents if contents
+      done()
+
 exports.show = (req, res) ->
   req.componentLoader.listComponents (components) ->
-    return res.send 404 unless components[req.component.id]
-    fs.readFile components[req.component.id], 'utf-8', (err, code) ->
-      return res.send 500 if err
-      req.component.code = code
-      req.component.doc = documentComponent components[req.component.id], code
+    sourceFile = components[req.component.id]
+    return res.send 404 unless sourceFile
+    readSources sourceFile, (sources) ->
+      req.component.code = sources.source
+      req.component.test = sources.tests
+      req.component.doc = documentComponent components[req.component.id], sources.source
       res.send req.component

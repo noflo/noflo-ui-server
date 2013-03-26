@@ -42,6 +42,10 @@ class models.Graphs extends Backbone.Collection
 class models.Initial extends Backbone.Model
 
 class models.Component extends Backbone.Model
+  defaults:
+    test: ''
+    code: ''
+    doc: ''
   url: ->
     return @collection.url() unless @id
     "#{@collection.url()}/#{encodeURIComponent(@id)}"
