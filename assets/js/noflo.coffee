@@ -5,6 +5,7 @@
 #= require models
 #= require GraphManager/router
 #= require GraphEditor/router
+#= require CodeEditor/router
 
 window.noflo = {} unless window.noflo
 
@@ -24,7 +25,11 @@ jQuery(document).ready ->
         project: project
         root: rootElement
         reset: reset
-      editor = new window.noflo.GraphEditor.Router
+      graphEditor = new window.noflo.GraphEditor.Router
+        project: project
+        root: rootElement
+        reset: reset
+      codeEditor = new window.noflo.CodeEditor.Router
         project: project
         root: rootElement
         reset: reset

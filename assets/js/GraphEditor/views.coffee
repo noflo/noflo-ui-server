@@ -101,20 +101,6 @@ class views.Node extends Backbone.View
   editComponent: ->
     @onEdit()
 
-class views.Component extends Backbone.View
-  template: '#Component'
-
-  render: ->
-    template = jQuery(@template).html()
-    nodeData = @model.toJSON()
-    nodeData.name = @model.id unless nodeData.name
-    @$el.html _.template template, nodeData
-    @
-
-  initializeEditor: ->
-    code = jQuery('textarea', @el).get 0
-    @editor = CodeMirror.fromTextArea code,
-      theme: 'lesser-dark'
 
 class views.GraphEditor extends Backbone.View
   nodeViews: null

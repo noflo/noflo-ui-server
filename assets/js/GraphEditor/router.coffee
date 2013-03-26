@@ -78,29 +78,3 @@ class window.noflo.GraphEditor.Router extends Backbone.Router
       success: =>
         @panel.html view.render().el
         @panel.show()
-
-  coreComponent: (graphId, componentId) ->
-    @component graphId, null, componentId
-
-  component: (graphId, packageId, componentId) ->
-    @reset()
-    componentId = "#{packageId}/#{componentId}" if packageId
-    graph = @graphs.get graphId
-    return @navigate '', true unless graph
-
-    if @editor is null or @editor.model.id isnt graphId
-      # Render the graph editor
-      @graph graphId
-
-    components = @project.get 'components'
-    components.fetch
-      success: =>
-        component = components.get componentId
-        return @navigate '', true unless component
-        component.fetch
-          success: =>
-            view = new window.noflo.GraphEditor.views.Component
-              model: component
-            @panel.html view.render().el
-            @panel.show()
-            view.initializeEditor()

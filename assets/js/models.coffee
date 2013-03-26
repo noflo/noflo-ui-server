@@ -44,7 +44,7 @@ class models.Initial extends Backbone.Model
 class models.Component extends Backbone.Model
   url: ->
     return @collection.url() unless @id
-    "#{@collection.url()}/#{@id}"
+    "#{@collection.url()}/#{encodeURIComponent(@id)}"
 
 class models.Components extends Backbone.Collection
   model: models.Component

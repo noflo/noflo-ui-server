@@ -1,0 +1,14 @@
+script#Component(type="text/html")
+  div.container
+    p.lead <%= description %>
+    article <%= doc %>
+
+script#EditComponent(type="text/html")
+  div.container
+    div.row
+      div.span6
+        h3 Code
+        textarea.code <%= code %>
+      div.span6
+        h3 Tests
+        textarea.test <%= test %>
