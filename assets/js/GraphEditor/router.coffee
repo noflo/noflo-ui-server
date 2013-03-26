@@ -11,6 +11,7 @@ class window.noflo.GraphEditor.Router extends Backbone.Router
   root: null
   panel: null
   editor: null
+  reset: ->
 
   routes:
     'graph/:network': 'graph'
@@ -19,6 +20,7 @@ class window.noflo.GraphEditor.Router extends Backbone.Router
   initialize: (options) ->
     @project = options.project
     @root = options.root
+    @reset = options.reset
     jsPlumb.setRenderMode jsPlumb.CANVAS
 
   prepareGraph: (graph, callback) ->
@@ -28,6 +30,7 @@ class window.noflo.GraphEditor.Router extends Backbone.Router
     graph.fetch success: done
 
   graph: (id) ->
+    @reset()
     if @project.get('graphs').length is 0
       @project.get('graphs').fetch
         success: =>
@@ -53,6 +56,7 @@ class window.noflo.GraphEditor.Router extends Backbone.Router
     @editor = view
 
   node: (graphId, nodeId) ->
+    @reset()
     graph = @graphs.get graphId
     return @navigate '', true unless graph
 
@@ -79,6 +83,7 @@ class window.noflo.GraphEditor.Router extends Backbone.Router
     @component graphId, null, componentId
 
   component: (graphId, packageId, componentId) ->
+    @reset()
     componentId = "#{packageId}/#{componentId}" if packageId
     graph = @graphs.get graphId
     return @navigate '', true unless graph

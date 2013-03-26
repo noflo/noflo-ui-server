@@ -25,6 +25,7 @@ class views.Graph extends Backbone.View
       control:
         label: @model.get 'name'
         icon: 'noflo'
+        up: this.handleUp
       actions: [
         id: 'save'
         label: 'Save'
@@ -35,6 +36,9 @@ class views.Graph extends Backbone.View
 
   save: ->
     jQuery.post "#{@model.url()}/commit"
+
+  handleUp: ->
+    @router.navigate '', true
 
   render: ->
     jQuery('body').addClass 'grapheditor'

@@ -5,6 +5,7 @@ views = window.noflo.GraphManager.views
 class window.noflo.GraphManager.Router extends Backbone.Router
   project: null
   root: null
+  reset: ->
 
   routes:
     '': 'index'
@@ -12,8 +13,10 @@ class window.noflo.GraphManager.Router extends Backbone.Router
   initialize: (options) ->
     @project = options.project
     @root = options.root
+    @reset = options.reset
 
   index: ->
+    @reset()
     show = _.after 2, =>
       graphsView = new views.Project
         app: @
