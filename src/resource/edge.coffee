@@ -24,7 +24,10 @@ exports.index = (req, res) ->
   res.send edges
 
 exports.create = (req, res) ->
-  edge = req.graph.addEdge req.body.from.node, req.body.from.port, req.body.to.node, req.body.to.port
+  edge = req.graph.addEdge req.body.from.node,
+    req.body.from.port,
+    req.body.to.node,
+    req.body.to.port
   res.send prepareEdge edge, req.graph.edges.length - 1
 
 exports.show = (req, res) ->

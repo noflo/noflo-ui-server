@@ -35,4 +35,5 @@ jQuery(document).ready ->
         reset: reset
       do Backbone.history.start
     error: ->
-      jQuery('#noflo').empty().append jQuery('<div>Failed to fetch projects</div>')
+      message = 'Failed to fetch projects'
+      jQuery('#noflo').empty().append jQuery "<div>#{message}</div>"

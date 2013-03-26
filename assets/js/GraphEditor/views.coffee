@@ -378,10 +378,12 @@ class views.GraphEdge extends Backbone.View
     targetDef = @model.get 'to'
 
     if sourceDef.node
-      source = @networkView.nodeViews[sourceDef.node].outPorts[sourceDef.port].endPoint
+      outPorts = @networkView.nodeViews[sourceDef.node].outPorts
+      source = outPorts[sourceDef.port].endPoint
     else
       return
-    target = @networkView.nodeViews[targetDef.node].inPorts[targetDef.port].endPoint
+    inPorts = @networkView.nodeViews[targetDef.node].inPorts
+    target = inPorts[targetDef.port].endPoint
     @connection = jsPlumb.connect
       source: source
       target: target

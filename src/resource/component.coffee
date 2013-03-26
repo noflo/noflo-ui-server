@@ -86,5 +86,5 @@ exports.show = (req, res) ->
     readSources sourceFile, (sources) ->
       req.component.code = sources.source
       req.component.test = sources.tests
-      req.component.doc = documentComponent components[req.component.id], sources.source
+      req.component.doc = documentComponent sourceFile, sources.source
       res.send req.component
