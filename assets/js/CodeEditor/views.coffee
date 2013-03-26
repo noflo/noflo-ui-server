@@ -55,6 +55,11 @@ class views.EditComponent extends Backbone.View
         label: @model.get 'name'
         icon: 'noflo'
         up: this.handleUp
+      actions: [
+        id: 'save'
+        label: 'Save'
+        icon: 'cloud-upload'
+      ]
     , @
 
   handleUp: ->

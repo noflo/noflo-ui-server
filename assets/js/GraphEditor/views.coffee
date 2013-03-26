@@ -29,7 +29,7 @@ class views.Graph extends Backbone.View
       actions: [
         id: 'save'
         label: 'Save'
-        icon: 'upload'
+        icon: 'cloud-upload'
         action: @save
       ]
     , @
