@@ -18,8 +18,8 @@ class window.noflo.GraphEditor.Router extends Backbone.Router
 
   prepareGraph: (graph, callback) ->
     done = _.after 3, -> callback graph
-    graph.get('nodes').fetch success: done
-    graph.get('edges').fetch success: done
+    graph.get('nodes').fetch success: done, reset: true
+    graph.get('edges').fetch success: done, reset: true
     graph.fetch success: done
 
   graph: (id) ->
