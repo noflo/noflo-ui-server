@@ -1,3 +1,7 @@
+#= require ../vendor/jquery-ui
+#= require ../vendor/jquery.ui.touch-punch
+#= require ../vendor/jsplumb
+
 window.noflo = {} unless window.noflo
 window.noflo.GraphEditor = {} unless window.noflo.GraphEditor
 
@@ -105,6 +109,7 @@ class views.Node extends Backbone.View
 class views.GraphEditor extends Backbone.View
   nodeViews: null
   edgeViews: null
+  jsPlumb: null
   className: 'graph'
   popoverTemplate: '#NetworkPopover'
 
@@ -181,30 +186,32 @@ class views.GraphEditor extends Backbone.View
   activate: ->
     @initializePlumb()
     _.each @nodeViews, (view) ->
-      view.activate()
+      view.activate @jsPlumb
     _.each @edgeViews, (view) ->
-      view.activate()
+      view.activate @jsPlumb
     @bindPlumb()
 
   initializePlumb: ->
     # We need this for DnD
     document.onselectstart = -> false
 
-    jsPlumb.Defaults.Connector = "StateMachine"
-    jsPlumb.Defaults.PaintStyle =
-      strokeStyle: "#33B5E5"
-      outlineWidth: 1
-      outlineColor: '#000000'
-      lineWidth: 2
-    jsPlumb.Defaults.DragOptions =
-      cursor: "pointer"
-      zIndex: 2000
-    jsPlumb.Defaults.ConnectionOverlays = [
-    ]
-    jsPlumb.setRenderMode jsPlumb.SVG
+    @jsPlumb = jsPlumb.getInstance()
+    @jsPlumb.importDefaults
+      Connector: "StateMachine"
+      PaintStyle:
+        strokeStyle: "#33B5E5"
+        outlineWidth: 1
+        outlineColor: '#000000'
+        lineWidth: 2
+      DragOptions:
+        cursor: "pointer"
+        zIndex: 2000
+      ConnectionOverlays: [
+      ]
+    @jsPlumb.setRenderMode jsPlumb.SVG
 
   bindPlumb: ->
-    jsPlumb.bind 'jsPlumbConnection', (info) =>
+    @jsPlumb.bind 'jsPlumbConnection', (info) =>
       newEdge =
         connection: info.connection
       for nodeId, nodeView of @nodeViews
@@ -221,7 +228,7 @@ class views.GraphEditor extends Backbone.View
       return unless newEdge.to and newEdge.from
       @model.get('edges').create newEdge
 
-    jsPlumb.bind 'jsPlumbConnectionDetached', (info) =>
+    @jsPlumb.bind 'jsPlumbConnectionDetached', (info) =>
       for edgeView in @edgeViews
         continue unless edgeView.connection is info.connection
         edgeView.model.destroy()
@@ -249,6 +256,7 @@ class views.GraphNode extends Backbone.View
   template: '#GraphNode'
   tagName: 'div'
   className: 'process'
+  jsPlumb: null
 
   events:
     'click': 'clicked'
@@ -302,12 +310,12 @@ class views.GraphNode extends Backbone.View
     view.render()
     @outPorts[port.get('name')] = view
 
-  activate: ->
-    @makeDraggable()
+  activate: (@jsPlumb) ->
+    @makeDraggable @jsPlumb
     _.each @inPorts, (view) ->
-      view.activate()
+      view.activate @jsPlumb
     _.each @outPorts, (view) ->
-      view.activate()
+      view.activate @jsPlumb
 
   saveModel: ->
     @model.save()
@@ -316,6 +324,7 @@ class views.GraphPort extends Backbone.View
   endPoint: null
   inPort: false
   anchor: "LeftMiddle"
+  jsPlumb: null
 
   portDefaults:
     endpoint: [
@@ -333,7 +342,7 @@ class views.GraphPort extends Backbone.View
 
   render: -> @
 
-  activate: ->
+  activate: (@jsPlumb) ->
     portOptions =
       isSource: true
       isTarget: false
@@ -356,11 +365,12 @@ class views.GraphPort extends Backbone.View
         readius: 6
       ]
       portOptions.maxConnections = -1
-    @endPoint = jsPlumb.addEndpoint @nodeView.el, portOptions, @portDefaults
+    @endPoint = @jsPlumb.addEndpoint @nodeView.el, portOptions, @portDefaults
 
 class views.GraphEdge extends Backbone.View
   networkView: null
   connection: null
+  jsPlumb: null
 
   initialize: (options) ->
     @connection = null
@@ -372,7 +382,7 @@ class views.GraphEdge extends Backbone.View
   render: ->
     @
 
-  activate: ->
+  activate: (@jsPlumb) ->
     return if @connection
     sourceDef = @model.get 'from'
     targetDef = @model.get 'to'
@@ -384,15 +394,15 @@ class views.GraphEdge extends Backbone.View
       return
     inPorts = @networkView.nodeViews[targetDef.node].inPorts
     target = inPorts[targetDef.port].endPoint
-    @connection = jsPlumb.connect
+    @connection = @jsPlumb.connect
       source: source
       target: target
 
 views.DraggableMixin =
   beingDragged: false
 
-  makeDraggable: ->
-    jsPlumb.draggable @el,
+  makeDraggable: (@jsPlumb) ->
+    @jsPlumb.draggable @el,
       start: (event, data) => @dragStart event, data
       stop: (event, data) => @dragStop event, data
     @

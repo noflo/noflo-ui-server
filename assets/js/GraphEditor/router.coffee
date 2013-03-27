@@ -1,8 +1,3 @@
-#= require ../vendor/jquery-ui
-#= require ../vendor/jquery.ui.touch-punch
-#= require ../vendor/jsplumb
-#= require ../vendor/codemirror
-#= require ../vendor/codemirror-coffeescript
 #= require views
 
 class window.noflo.GraphEditor.Router extends Backbone.Router
@@ -21,7 +16,6 @@ class window.noflo.GraphEditor.Router extends Backbone.Router
     @project = options.project
     @root = options.root
     @reset = options.reset
-    jsPlumb.setRenderMode jsPlumb.CANVAS
 
   prepareGraph: (graph, callback) ->
     done = _.after 3, -> callback graph
