@@ -72,49 +72,18 @@ class views.Graph extends Backbone.View
     @editorView = new views.GraphEditor
       model: @model
       app: @router
-      openNode: @openNode
-      closeNode: @closeNode
       
     container = jQuery '.editor', @el
     container.html @editorView.render().el
     @editorView.activate()
-
-class views.Node extends Backbone.View
-  template: '#Node'
-
-  initialize: (options) ->
-    @onRemove = options.onRemove
-    @onEdit = options.onEdit
-
-  events:
-    'click button.remove': 'removeNode'
-    'click button.edit': 'editComponent'
-
-  render: ->
-    template = jQuery(@template).html()
-    nodeData = @model.toJSON()
-    nodeData.name = @model.id unless nodeData.name
-    @$el.html _.template template, nodeData
-    @
-
-  removeNode: ->
-    @model.destroy
-      success: =>
-        @onRemove()
-
-  editComponent: ->
-    @onEdit()
-
 
 class views.GraphEditor extends Backbone.View
   nodeViews: null
   edgeViews: null
   jsPlumb: null
   className: 'graph'
-  popoverTemplate: '#NetworkPopover'
 
   events:
-    'click button.addnode': 'addNode'
     'click': 'graphClicked'
 
   initialize: (options) ->
@@ -129,42 +98,6 @@ class views.GraphEditor extends Backbone.View
     @model.get('nodes').bind 'reset', @renderNodes
     @model.get('edges').bind 'edges', @renderEdges
     @model.get('edges').bind 'add', @renderEdge
-
-  removePopover: ->
-    return unless @popover
-    @popover.popover 'destroy'
-    @popover.remove()
-    @popover = null
-
-  getPopover: (top, left) ->
-    target = jQuery '<div></div>'
-    target.css
-      position: 'absolute'
-      top: top
-      left: left
-    @$el.append target
-
-    target.popover
-      placement: 'bottom'
-      html: true
-      title: 'Select what to add'
-      content: _.template jQuery(@popoverTemplate).html(), {}
-    target.popover 'show'
-    @popover = target
-
-  graphClicked: (event) ->
-    @closeNode()
-    return
-    do @removePopover
-    return unless event.target is @el
-    y = event.pageY - @$el.offset().top
-    x = event.pageX - @$el.offset().left
-    @getPopover y, x
-
-  addNode: ->
-    x = @popover.css('top').replace 'px', ''
-    y = @popover.css('left').replace 'px', ''
-    @app.navigate "#network/#{@model.id}/add/#{x}/#{y}", true
 
   render: ->
     @$el.empty()
@@ -195,8 +128,14 @@ class views.GraphEditor extends Backbone.View
     # We need this for DnD
     document.onselectstart = -> false
 
-    @jsPlumb = jsPlumb.getInstance()
-    @jsPlumb.importDefaults
+    # FIXME: This global shouldn't be necessary
+    jsPlumb.Defaults.PaintStyle =
+      strokeStyle: "#33B5E5"
+      outlineWidth: 1
+      outlineColor: '#000000'
+      lineWidth: 2
+
+    @jsPlumb = jsPlumb.getInstance
       Connector: "StateMachine"
       PaintStyle:
         strokeStyle: "#33B5E5"
@@ -206,8 +145,6 @@ class views.GraphEditor extends Backbone.View
       DragOptions:
         cursor: "pointer"
         zIndex: 2000
-      ConnectionOverlays: [
-      ]
     @jsPlumb.setRenderMode jsPlumb.SVG
 
   bindPlumb: ->
