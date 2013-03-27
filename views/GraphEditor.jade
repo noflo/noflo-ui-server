@@ -1,32 +1,9 @@
 script#Graph(type="text/html")
   div.editor
 
-script#Node(type="text/html")
-  h1 <%= name %>
-  p Component: <%= component %>
-  div.btn-toolbar
-    button.btn.remove
-      i.icon-remove
-      span.hidden-phone  Remove node
-    button.btn.edit
-      i.icon-edit
-      span.hidden-phone  Edit component
-
-script#GraphPullDown(type="text/html")
-  li
-    a
-      <%= name %>
-
 script#GraphNode(type="text/html")
-  h4 <%= id %>
-  p.component <%= component %>
-
-script#NetworkPopover(type="text/html")
-  div
-    button.addnode.btn Node
-
-script#AddNodeComponent(type="text/html")
-  div.thumbnail
-    h3 <%= name %>
-    p <%= description %>
-    button.use.btn Use
+  h4
+    span <%= id %>
+    small  <%= component %>
+  ul.inPorts
+  ul.outPorts

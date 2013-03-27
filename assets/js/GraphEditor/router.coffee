@@ -10,7 +10,6 @@ class window.noflo.GraphEditor.Router extends Backbone.Router
 
   routes:
     'graph/:network': 'graph'
-    'graph/:network/node/:id': 'node'
 
   initialize: (options) ->
     @project = options.project
@@ -48,27 +47,3 @@ class window.noflo.GraphEditor.Router extends Backbone.Router
     @prepareGraph graph, -> view.initializeEditor()
 
     @editor = view
-
-  node: (graphId, nodeId) ->
-    @reset()
-    graph = @graphs.get graphId
-    return @navigate '', true unless graph
-
-    if @editor is null or @editor.model.id isnt graphId
-      # Render the graph editor
-      @graph graphId
-
-    node = graph.get('nodes').get nodeId
-    unless node
-      @prepareGraph graph, => @node graphId, nodeId
-      return
-    view = new window.noflo.GraphEditor.views.Node
-      model: node
-      onRemove: =>
-        @navigate "#graph/#{graphId}", true
-      onEdit: =>
-        @navigate "#graph/#{graphId}/component/#{node.get('component')}", true
-    node.fetch
-      success: =>
-        @panel.html view.render().el
-        @panel.show()

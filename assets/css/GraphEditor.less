@@ -1,8 +1,8 @@
 @highlight: #33B5E5;
 @background: #000000;
 @annotation: #888a85;
-@processWidth: 80px;
-@processHeight: 40px;
+@processWidth: 120px;
+@processHeight: 80px;
 @import url('https://fonts.googleapis.com/css?family=Droid+Sans:400,700');
 
 body {
@@ -53,8 +53,6 @@ div.graph {
 
 div.process {
   position: absolute;
-  width: @processWidth;
-  height: @processHeight;
   border: 2px solid @highlight;
   background-color: @background;
   box-shadow: 0px 0px 1px @background, 2px 2px 19px @highlight;
@@ -63,21 +61,45 @@ div.process {
   text-align: center;
   padding: 6px;
   font-color: #ffffff;
-  overflow: hidden;
-}
 
-div.process h4 {
-  margin: 0px;
-  padding: 0px;
-  font-weight: normal;
-}
+  h4 {
+    margin: 0px;
+    padding: 0px;
+    margin-bottom: 8px;
+    font-weight: normal;
+  }
 
-div.process p {
-  margin: 0px;
-  padding: 0px;
-  margin-top: 0.5em;
-  font-size: 9px;
-  color: @annotation;
+  ul.inPorts {
+    float: left;
+    width: 50%;
+    margin: 0px;
+    margin-left: -6px;
+    padding: 0px;
+    list-style: none;
+    text-align: left;
+    li {
+      padding-left: 20px;
+      text-transform: uppercase;
+      line-height: 30px;
+      color: @annotation;
+    }
+  }
+
+  ul.outPorts {
+    float: right;
+    width: 50%;
+    margin: 0px;
+    margin-right: -6px;
+    padding: 0px;
+    list-style: none;
+    text-align: right;
+    li {
+      padding-right: 20px;
+      text-transform: uppercase;
+      line-height: 30px;
+      color: @annotation;
+    }
+  }
 }
 
 div.subgraph {

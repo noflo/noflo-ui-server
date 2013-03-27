@@ -50,23 +50,8 @@ class views.Graph extends Backbone.View
     graphData = @model.toJSON()
     graphData.name = "graph #{@model.id}" unless graphData.name
     @$el.html _.template template, graphData
-    @showGraphs()
     @actionBar.show()
     @
-
-  showGraphs: ->
-    container = jQuery '.nav .dropdown .graphs', @el
-    container.empty()
-    @graphs.each (graph) ->
-      return if graph.id is @model.id
-      template = jQuery('#GraphPullDown').html()
-      graphData =
-        name: graph.get 'name'
-        url: "#graph/#{graph.id}"
-      html = jQuery _.template template, graphData
-      jQuery('a', html).attr 'href', graphData.url
-      container.append html
-    , @
 
   initializeEditor: ->
     @editorView = new views.GraphEditor
@@ -86,35 +71,52 @@ class views.GraphEditor extends Backbone.View
   events:
     'click': 'graphClicked'
 
-  initialize: (options) ->
+  initialize: ({@app}) ->
     @nodeViews = {}
     @edgeViews = []
     @app = options?.app
     @popover = null
-    @openNode = options.openNode
-    @closeNode = options.closeNode
 
-    _.bindAll @, 'renderNodes', 'renderEdges', 'renderEdge'
-    @model.get('nodes').bind 'reset', @renderNodes
-    @model.get('edges').bind 'edges', @renderEdges
-    @model.get('edges').bind 'add', @renderEdge
+    @listenTo @model.get('nodes'), 'reset', @renderNodes
+    @listenTo @model.get('edges'), 'reset', @renderEdges
 
   render: ->
     @$el.empty()
-
-    @renderNodes()
-    @renderEdges()
+    fragment = document.createDocumentFragment()
+    @renderNodes fragment
+    @renderEdges fragment
     # TODO: Render legends
-
+    @$el.append fragment
     @
 
-  renderNodes: ->
-    @model.get('nodes').each @renderNode, @
-
-  renderEdges: ->
-    @model.get('edges').each (edge) ->
-      @renderEdge edge
+  renderNodes: (container) ->
+    @model.get('nodes').each (node) ->
+      @renderNode node, container
     , @
+
+  renderEdges: (container) ->
+    @model.get('edges').each (edge) ->
+      @renderEdge edge, container
+    , @
+
+  renderNode: (node, container) ->
+    view = new views.GraphNode
+      model: node
+      networkView: @
+      openNode: @openNode
+    if container
+      container.appendChild view.render().el
+    else
+      @$el.append view.render().el
+
+    @nodeViews[node.id] = view
+
+  renderEdge: (edge) ->
+    view = new views.GraphEdge
+      model: edge
+      networkView: @
+    view.render()
+    @edgeViews.push view
 
   activate: ->
     @initializePlumb()
@@ -134,6 +136,7 @@ class views.GraphEditor extends Backbone.View
       outlineWidth: 1
       outlineColor: '#000000'
       lineWidth: 2
+    jsPlumb.Defaults.Container = @$el
 
     @jsPlumb = jsPlumb.getInstance
       Connector: "StateMachine"
@@ -170,24 +173,7 @@ class views.GraphEditor extends Backbone.View
         continue unless edgeView.connection is info.connection
         edgeView.model.destroy()
 
-  renderNode: (node) ->
-    view = new views.GraphNode
-      model: node
-      networkView: @
-      openNode: @openNode
-    @$el.append view.render().el
-    @nodeViews[node.id] = view
-
-  renderEdge: (edge) ->
-    view = new views.GraphEdge
-      model: edge
-      networkView: @
-    view.render()
-    @edgeViews.push view
-
 class views.GraphNode extends Backbone.View
-  inAnchors: ["LeftMiddle", "TopLeft", "BottomLeft", "TopCenter"]
-  outAnchors: ["RightMiddle", "BottomRight", "TopRight", "BottomCenter"]
   inPorts: null
   outPorts: null
   template: '#GraphNode'
@@ -222,29 +208,59 @@ class views.GraphNode extends Backbone.View
 
     templateData = @model.toJSON()
     templateData.id = templateData.cleanId unless templateData.id
+    templateData.component = '' if templateData.component is templateData.id
 
     @$el.html _.template template, templateData
 
-    @model.get('inPorts').each @renderInport, @
-    @model.get('outPorts').each @renderOutport, @
+    @$inPorts = jQuery '.inPorts', @el
+    @$outPorts = jQuery '.outPorts', @el
+
+    inContainer = document.createDocumentFragment()
+    @renderInports inContainer
+    @$inPorts.append inContainer
+    outContainer = document.createDocumentFragment()
+    @renderOutports outContainer
+    @$outPorts.append outContainer
     @
 
-  renderInport: (port, index) ->
+  renderInports: (container) ->
+    @model.get('inPorts').each (port) ->
+      @renderInport port, container
+    , @
+
+  renderOutports: (container) ->
+    @model.get('outPorts').each (port) ->
+      @renderOutport port, container
+    , @
+
+  renderInport: (port, container) ->
     view = new views.GraphPort
       model: port
       inPort: true
+      anchor: 'LeftMiddle'
       nodeView: @
-      anchor: @inAnchors[index]
     view.render()
+
+    if container
+      container.appendChild view.el
+    else
+      @$inPorts.append view.el
+
     @inPorts[port.get('name')] = view
 
-  renderOutport: (port, index) ->
+  renderOutport: (port, container) ->
     view = new views.GraphPort
       model: port
       inPort: false
+      anchor: 'RightMiddle'
       nodeView: @
-      anchor: @outAnchors[index]
     view.render()
+
+    if container
+      container.appendChild view.el
+    else
+      @$inPorts.append view.el
+
     @outPorts[port.get('name')] = view
 
   activate: (@jsPlumb) ->
@@ -262,22 +278,22 @@ class views.GraphPort extends Backbone.View
   inPort: false
   anchor: "LeftMiddle"
   jsPlumb: null
+  tagName: 'li'
 
   portDefaults:
     endpoint: [
       'Dot'
-      radius: 6
+      radius: 10
     ]
     paintStyle:
       fillStyle: '#ffffff'
 
-  initialize: (options) ->
+  initialize: ({@inPort, @anchor}) ->
     @endPoint = null
-    @nodeView = options?.nodeView
-    @inPort = options?.inPort
-    @anchor = options?.anchor
 
-  render: -> @
+  render: ->
+    @$el.html @model.get 'name'
+    @
 
   activate: (@jsPlumb) ->
     portOptions =
@@ -285,24 +301,16 @@ class views.GraphPort extends Backbone.View
       isTarget: false
       maxConnections: 1
       anchor: @anchor
-      overlays: [
-        [
-          "Label"
-            location: [2.5,-0.5]
-            label: @model.get('name')
-        ]
-      ]
     if @inPort
       portOptions.isSource = false
       portOptions.isTarget = true
-      portOptions.overlays[0][1].location = [-1.5, -0.5]
     if @model.get('type') is 'array'
       portOptions.endpoint = [
         'Rectangle'
         readius: 6
       ]
       portOptions.maxConnections = -1
-    @endPoint = @jsPlumb.addEndpoint @nodeView.el, portOptions, @portDefaults
+    @endPoint = @jsPlumb.addEndpoint @el, portOptions, @portDefaults
 
 class views.GraphEdge extends Backbone.View
   networkView: null
