@@ -42,10 +42,14 @@ class views.Project extends Backbone.View
 
   countStats: ->
     stats =
-      graphCount: @model.get('graphs').length
-      nodeCount: @model.get('graphs').reduce (nodes, graph) ->
+      graphCount: @model.get('graphs').where(
+        project: @model.get('name')
+      ).length
+      nodeCount: _.reduce(@model.get('graphs').where(
+        project: @model.get('name')
+      ), (nodes, graph) ->
         nodes += graph.get 'nodeCount'
-      , 0
+      , 0)
       totalComponents: @model.get('components').where(
         subgraph: false
       ).length
@@ -61,6 +65,7 @@ class views.Project extends Backbone.View
     view = new views.GraphList
       el: jQuery '.graphs', @el
       collection: @model.get 'graphs'
+      project: @model
       app: @app
     view.render()
 
@@ -78,6 +83,7 @@ class views.GraphList extends Backbone.View
   initialize: (options) ->
     @app = options.app
     @collection = options.collection
+    @project = options.project
     @listenTo @collection, 'add', @addGraph
     @listenTo @collection, 'remove', @removeGraph
     @listenTo @collection, 'reset', @render
@@ -87,6 +93,7 @@ class views.GraphList extends Backbone.View
     @collection.each @addGraph, @
 
   addGraph: (graph) ->
+    return unless graph.get('project') is @project.get('name')
     view = new views.GraphListItem
       model: graph
       app: @app
