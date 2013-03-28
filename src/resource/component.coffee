@@ -101,8 +101,8 @@ exports.create = (req, res) ->
     fs.writeFile sourceFile, req.componentTemplate, (err) ->
       return res.send err, 500 if err
 
-      req.componentLoader.registerComponent req.project.name, req.body.name, localSourceFile,
-        (err) ->
+      req.componentLoader.registerComponent req.project.name,
+        req.body.name, localSourceFile, (err) ->
           return res.send err, 500 if err
           res.send
             id: "#{req.body.project}/#{req.body.name}"

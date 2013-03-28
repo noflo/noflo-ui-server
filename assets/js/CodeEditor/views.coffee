@@ -69,7 +69,7 @@ class views.AddComponent extends Backbone.View
       name: name
       project: project
     , success: =>
-        @router.navigate "#component/#{project}/#{name}/edit", true
+      @router.navigate "#component/#{project}/#{name}/edit", true
       error: (e) -> alert e
 
   render: ->
