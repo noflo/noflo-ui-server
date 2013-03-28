@@ -28,19 +28,49 @@ prepareComponent = (component, instance, callback) ->
   clean.outPorts = _.keys instance.outPorts if instance.outPorts
   callback null, clean
 
-documentComponent = (sourceFile, sourceCode) ->
-  chunks = docco.parse sourceFile, sourceCode
-  html = ''
-  for chunk in chunks
-    code = highlight('coffeescript', chunk.codeText).value
-    code = code.replace(/\s+$/, '')
-    chunk.codeHtml = "<div class='highlight'><pre>#{code}</pre></div>"
-    chunk.docsHtml = marked(chunk.docsText)
-    html += "<section>"
-    html += chunk.docsHtml
-    html += chunk.codeHtml
-    html += "</section>"
-  html
+getSourcePath = (req, component, callback) ->
+  req.componentLoader.listComponents (components) ->
+    callback components[component]
+
+getTestPath = (req, component, callback) ->
+  getSourcePath req, component, (sourceFile) ->
+    return callback null unless sourceFile
+    callback path.resolve sourceFile, "../../test/#{path.basename(sourceFile)}"
+
+readSources = (req, component, callback) ->
+  getSourcePath req, component, (sourceFile) ->
+    source = ''
+    tests = ''
+    done = _.after 2, ->
+      callback
+        source: source
+        tests: tests
+    fs.readFile sourceFile, 'utf-8', (err, contents) ->
+      source = contents if contents
+      done()
+
+    getTestPath req, component, (testFile) ->
+      # Check if we have tests for the component
+      fs.exists testFile, (exists) ->
+        return done() unless exists
+        fs.readFile testFile, 'utf-8', (err, contents) ->
+          tests = contents if contents
+          done()
+
+documentComponent = (req, component, sourceCode, callback) ->
+  getSourcePath req, component, (sourceFile) ->
+    chunks = docco.parse sourceFile, sourceCode
+    html = ''
+    for chunk in chunks
+      code = highlight('coffeescript', chunk.codeText).value
+      code = code.replace(/\s+$/, '')
+      chunk.codeHtml = "<div class='highlight'><pre>#{code}</pre></div>"
+      chunk.docsHtml = marked(chunk.docsText)
+      html += "<section>"
+      html += chunk.docsHtml
+      html += chunk.codeHtml
+      html += "</section>"
+    callback html
 
 exports.index = (req, res) ->
   req.componentLoader.listComponents (components) ->
@@ -59,32 +89,11 @@ exports.load = (req, id, callback) ->
     req.componentLoader.load id, (instance) ->
       prepareComponent id, instance, callback
 
-readSources = (sourceFile, callback) ->
-  source = ''
-  tests = ''
-  done = _.after 2, ->
-    callback
-      source: source
-      tests: tests
-  fs.readFile sourceFile, 'utf-8', (err, contents) ->
-    source = contents if contents
-    done()
-
-  # Check if we have tests for the component
-  testFile = path.resolve sourceFile, "../../test/#{path.basename(sourceFile)}"
-  console.log testFile
-  fs.exists testFile, (exists) ->
-    return done() unless exists
-    fs.readFile testFile, 'utf-8', (err, contents) ->
-      tests = contents if contents
-      done()
 
 exports.show = (req, res) ->
-  req.componentLoader.listComponents (components) ->
-    sourceFile = components[req.component.id]
-    return res.send 404 unless sourceFile
-    readSources sourceFile, (sources) ->
-      req.component.code = sources.source
-      req.component.test = sources.tests
-      req.component.doc = documentComponent sourceFile, sources.source
+  readSources req, req.component.id, (sources) ->
+    req.component.code = sources.source
+    req.component.test = sources.tests
+    documentComponent req, req.component.id, sources.source, (docs) ->
+      req.component.doc = docs
       res.send req.component
