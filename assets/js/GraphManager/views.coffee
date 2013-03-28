@@ -138,9 +138,6 @@ class views.GraphListItem extends Backbone.View
             left = node.get('display').x * scale
           context.fillRect top, left, 8, 4
 
-      error: (e) ->
-        alert e
-
 class views.ComponentList extends Backbone.View
   views: {}
 

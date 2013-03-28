@@ -8,12 +8,20 @@ class window.noflo.CodeEditor.Router extends Backbone.Router
   reset: ->
 
   routes:
+    'component/new': 'addComponent'
     'component/:name': 'coreComponent'
     'component/:name/edit': 'coreComponentEdit'
     'component/:package/:name': 'component'
     'component/:package/:name/:edit': 'componentEdit'
 
   initialize: ({@project, @root, @reset}) ->
+
+  addComponent: ->
+    @reset()
+    view = new window.noflo.CodeEditor.views.AddComponent
+      router: @
+      project: @project
+    @root.html view.render().el
 
   prepareComponent: (componentId, callback) ->
     components = @project.get 'components'

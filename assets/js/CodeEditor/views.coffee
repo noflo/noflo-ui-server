@@ -39,14 +39,53 @@ class views.Component extends Backbone.View
     @actionBar.show()
     @
 
+class views.AddComponent extends Backbone.View
+  template: '#AddComponent'
+  actionBar: null
+
+  events:
+    'click #save': 'save'
+    'form submit': 'save'
+
+  initialize: ({@router, @project}) ->
+    @prepareActionBar()
+
+  prepareActionBar: ->
+    @actionBar = new ActionBar
+      control:
+        label: 'New component'
+        icon: 'noflo'
+        up: @handleUp
+    , @
+
+  handleUp: ->
+    @router.navigate '', true
+
+  save: (event) ->
+    event.preventDefault()
+    name = jQuery('input#name', @el).val()
+    project = @project.get 'name'
+    @project.get('components').create
+      name: name
+      project: project
+    , success: =>
+        @router.navigate "#component/#{project}/#{name}/edit", true
+      error: (e) -> alert e
+
+  render: ->
+    template = jQuery(@template).html()
+    @$el.html _.template template,
+      project: @project.get 'name'
+    @actionBar.show()
+    @
+
 class views.EditComponent extends Backbone.View
   template: '#EditComponent'
   codeEditor: null
   testEditor: null
   actionBar: null
 
-  initialize: (options) ->
-    @router = options.router
+  initialize: ({@router}) ->
     @prepareActionBar()
 
   prepareActionBar: ->
@@ -54,7 +93,7 @@ class views.EditComponent extends Backbone.View
       control:
         label: @model.get 'name'
         icon: 'noflo'
-        up: this.handleUp
+        up: @handleUp
       actions: [
         id: 'save'
         label: 'Save'

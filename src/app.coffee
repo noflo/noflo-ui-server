@@ -3,6 +3,7 @@ assets = require 'connect-assets'
 resource = require 'express-resource'
 noflo = require 'noflo'
 path = require 'path'
+fs = require 'fs'
 
 exports.createServer = (projectData, callback) ->
   app = express()
@@ -14,12 +15,16 @@ exports.createServer = (projectData, callback) ->
 
   componentLoader = new noflo.ComponentLoader projectData.localDir
 
+  templateFile = path.resolve __dirname, '../templates/SyncComponent.coffee'
+  componentTemplate = fs.readFileSync templateFile, 'utf-8'
+
   # Expose networks to resources
   app.graphs = []
   app.use (req, res, next) ->
     req.graphs = app.graphs
     req.componentLoader = componentLoader
     req.project = projectData
+    req.componentTemplate = componentTemplate
     next()
 
   # Asset pipeline for CoffeeScript and other files

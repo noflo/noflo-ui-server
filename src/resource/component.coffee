@@ -89,6 +89,28 @@ exports.index = (req, res) ->
           clean.push cleaned
           sendComponents()
 
+exports.create = (req, res) ->
+  unless req.body.name
+    return res.send "Missing component name", 422
+
+  componentDir = "#{req.componentLoader.baseDir}/components"
+  sourceFile = "#{componentDir}/#{req.body.name}.coffee"
+  localSourceFile = "./components/#{req.body.name}.coffee"
+  fs.exists sourceFile, (exists) ->
+    return res.send "Component already exists", 422 if exists
+    fs.writeFile sourceFile, req.componentTemplate, (err) ->
+      return res.send err, 500 if err
+
+      req.componentLoader.registerComponent req.project.name, req.body.name, localSourceFile,
+        (err) ->
+          return res.send err, 500 if err
+          res.send
+            id: "#{req.body.project}/#{req.body.name}"
+            name: req.body.name
+            project: req.body.project
+            description: ''
+            subgraph: false
+
 exports.update = (req, res) ->
   unless req.body.code
     return res.send "Missing component source code", 422
@@ -99,11 +121,19 @@ exports.update = (req, res) ->
   getSourcePath req, req.component.id, (sourceFile) ->
     fs.writeFile sourceFile, req.body.code, (err) ->
       return res.send err if err
+
+      # Ensure Node.js loads the new version
+      delete require.cache[sourceFile] if require.cache[sourceFile]
+
       done()
 
   return done() unless req.body.test
   getTestPath req, req.component.id, (testFile) ->
     fs.writeFile testFile, req.body.test, (err) ->
+
+      # Ensure Node.js loads the new version
+      delete require.cache[testFile] if require.cache[testFile]
+
       done()
 
 exports.show = (req, res) ->
