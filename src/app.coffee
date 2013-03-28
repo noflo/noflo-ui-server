@@ -19,9 +19,7 @@ exports.createServer = (projectData, callback) ->
   componentTemplate = fs.readFileSync templateFile, 'utf-8'
 
   # Expose networks to resources
-  app.graphs = []
   app.use (req, res, next) ->
-    req.graphs = app.graphs
     req.componentLoader = componentLoader
     req.project = projectData
     req.componentTemplate = componentTemplate

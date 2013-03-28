@@ -17,9 +17,5 @@ project.readProject projectDir, (err, projectData) ->
   app.createServer projectData, (err, server) ->
     return console.error err if err
 
-    project.getGraphs projectData, (err, graphs) ->
-      return console.error err if err
-
-      server.graphs.push graph for graph in graphs
-      server.listen port, (err) ->
-        console.log "NoFlo listening at port #{port}"
+    server.listen port, (err) ->
+      console.log "NoFlo listening at port #{port}"

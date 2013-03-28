@@ -28,7 +28,7 @@ class models.Graph extends Backbone.Model
 
   url: ->
     return @collection.url() unless @id
-    "#{@collection.url()}/#{@id}"
+    "#{@collection.url()}/#{encodeURIComponent(@id)}"
 
 class models.Graphs extends Backbone.Collection
   model: models.Graph
