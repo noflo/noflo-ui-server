@@ -59,11 +59,17 @@ class views.EditComponent extends Backbone.View
         id: 'save'
         label: 'Save'
         icon: 'cloud-upload'
+        action: @save
       ]
     , @
 
   handleUp: ->
     @router.navigate "#component/#{@model.id}", true
+
+  save: ->
+    @model.save
+      success: =>
+        @handleUp()
 
   render: ->
     template = jQuery(@template).html()
@@ -77,6 +83,10 @@ class views.EditComponent extends Backbone.View
     code = jQuery('textarea.code', @el).get 0
     @codeEditor = CodeMirror.fromTextArea code,
       theme: 'lesser-dark'
+    @codeEditor.on 'change', =>
+      @model.set 'code', @codeEditor.getValue()
     test = jQuery('textarea.test', @el).get 0
     @testEditor = CodeMirror.fromTextArea test,
       theme: 'lesser-dark'
+    @testEditor.on 'change', =>
+      @model.set 'test', @testEditor.getValue()

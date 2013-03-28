@@ -14,9 +14,6 @@ class views.Graph extends Backbone.View
   router: null
   actionBar: null
 
-  events:
-    'click #save': 'save'
-
   initialize: (options) ->
     @router = options.router
     @graphs = options.graphs

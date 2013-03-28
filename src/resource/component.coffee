@@ -72,6 +72,12 @@ documentComponent = (req, component, sourceCode, callback) ->
       html += "</section>"
     callback html
 
+exports.load = (req, id, callback) ->
+  req.componentLoader.listComponents (components) ->
+    return callback 'not found', null unless components[id]
+    req.componentLoader.load id, (instance) ->
+      prepareComponent id, instance, callback
+
 exports.index = (req, res) ->
   req.componentLoader.listComponents (components) ->
     clean = []
@@ -83,12 +89,22 @@ exports.index = (req, res) ->
           clean.push cleaned
           sendComponents()
 
-exports.load = (req, id, callback) ->
-  req.componentLoader.listComponents (components) ->
-    return callback 'not found', null unless components[id]
-    req.componentLoader.load id, (instance) ->
-      prepareComponent id, instance, callback
+exports.update = (req, res) ->
+  unless req.body.code
+    return res.send "Missing component source code", 422
 
+  done = _.after 2, ->
+    exports.show req, res
+
+  getSourcePath req, req.component.id, (sourceFile) ->
+    fs.writeFile sourceFile, req.body.code, (err) ->
+      return res.send err if err
+      done()
+
+  return done() unless req.body.test
+  getTestPath req, req.component.id, (testFile) ->
+    fs.writeFile testFile, req.body.test, (err) ->
+      done()
 
 exports.show = (req, res) ->
   readSources req, req.component.id, (sources) ->
