@@ -4,6 +4,7 @@ resource = require 'express-resource'
 noflo = require 'noflo'
 path = require 'path'
 fs = require 'fs'
+tester = require './test'
 
 exports.createServer = (projectData, callback) ->
   app = express()
@@ -51,6 +52,13 @@ exports.createServer = (projectData, callback) ->
     name = path.basename req.graph.fileName, path.extname req.graph.fileName
     req.graph.save "#{dir}/#{name}", (file) ->
       res.end '200'
+
+  # Ability to run tests
+  components.map 'get', 'test', (req, res) ->
+    tester.getPath req.componentLoader, req.component.id, (testPath) ->
+      return res.send 404 unless testPath
+      tester.runTests req.componentLoader, testPath, (results) ->
+        res.send results
 
   componentLoader.listComponents (components) ->
     callback null, app
