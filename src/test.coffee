@@ -29,7 +29,8 @@ exports.getPath = (loader, component, callback) ->
   loader.listComponents (components) ->
     return callback null unless components[component]
     sourceFile = components[component]
-    testFile = path.resolve sourceFile, "../../test/#{path.basename(sourceFile)}"
+    baseName = path.basename sourceFile
+    testFile = path.resolve sourceFile, "../../test/#{baseName}"
     fs.exists testFile, (exists) ->
       return callback null unless exists
       callback testFile
