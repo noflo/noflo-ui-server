@@ -23,13 +23,13 @@ class window.noflo.GraphEditor.Router extends Backbone.Router
     graph.fetch success: done
 
   graph: (id) ->
-    @reset()
     if @project.get('graphs').length is 0
       @project.get('graphs').fetch
         success: =>
           @graph id
       return
 
+    @reset()
     graph = @project.get('graphs').get id
     return @navigate '', true unless graph
 
