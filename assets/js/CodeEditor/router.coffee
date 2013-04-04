@@ -17,6 +17,11 @@ class window.noflo.CodeEditor.Router extends Backbone.Router
   initialize: ({@project, @root, @reset}) ->
 
   addComponent: ->
+    if @project.get('components').length is 0
+      @project.get('components').fetch
+        success: =>
+          @addComponent packageId, componentId
+
     @reset()
     view = new window.noflo.CodeEditor.views.AddComponent
       router: @
@@ -38,6 +43,10 @@ class window.noflo.CodeEditor.Router extends Backbone.Router
 
   component: (packageId, componentId) ->
     @reset()
+    if @project.get('components').length is 0
+      @project.get('components').fetch
+        success: =>
+          @component packageId, componentId
 
     componentId = "#{packageId}/#{componentId}" if packageId
     @prepareComponent componentId, (component) =>

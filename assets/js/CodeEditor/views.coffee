@@ -68,8 +68,10 @@ class views.AddComponent extends Backbone.View
     @project.get('components').create
       name: name
       project: project
-    , success: =>
-      @router.navigate "#component/#{project}/#{name}/edit", true
+    ,
+      wait: true
+      success: =>
+        @router.navigate "#component/#{project}/#{name}/edit", true
       error: (e) -> alert e
 
   render: ->
