@@ -1,5 +1,7 @@
 noflo = require 'noflo'
 {_} = require 'underscore'
+fs = require 'fs'
+path = require 'path'
 
 prepareGraph = (graph, callback) ->
   clean = graph.toJSON()
@@ -45,7 +47,27 @@ exports.index = (req, res) ->
         done()
 
 exports.create = (req, res) ->
-  res.send 404
+  unless req.body.name
+    return res.send "Missing graph name", 422
+
+  graphDir = "#{req.componentLoader.baseDir}/graphs"
+  sourceFileNoExt = "#{graphDir}/#{req.body.name}"
+  sourceFile = "#{sourceFileNoExt}.json"
+  localSourceFile = "./graphs/#{req.body.name}.json"
+  fs.exists sourceFile, (exists) ->
+    return res.send "Graph already exists", 422 if exists
+
+    graph = new noflo.Graph
+    graph.save sourceFileNoExt, ->
+
+      req.componentLoader.registerGraph req.project.name,
+        req.body.name, localSourceFile, (err) ->
+          return res.send err, 500 if err
+          res.send
+            id: "#{req.body.project}/#{req.body.name}"
+            name: req.body.name
+            project: req.body.project
+            nodeCount: 0
 
 exports.show = (req, res) ->
   res.send prepareGraph req.graph

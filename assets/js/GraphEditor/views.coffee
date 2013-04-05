@@ -55,6 +55,47 @@ class views.Graph extends Backbone.View
     container.html @editorView.render().el
     @editorView.activate()
 
+class views.AddGraph extends Backbone.View
+  template: '#AddGraph'
+  actionBar: null
+
+  events:
+    'click #save': 'save'
+    'form submit': 'save'
+
+  initialize: ({@router, @project, @actionBar}) ->
+    @prepareActionBar()
+
+  prepareActionBar: ->
+    control = @actionBar.get 'control'
+    control.set 'label', 'New graph'
+    control.set 'up', @handleUp
+
+    actions = @actionBar.get 'actions'
+    actions.reset()
+
+  handleUp: =>
+    @router.navigate '', true
+
+  save: (event) ->
+    event.preventDefault()
+    name = jQuery('input#name', @el).val()
+    project = @project.get 'name'
+    @project.get('graphs').create
+      name: name
+      project: project
+    ,
+      wait: true
+      success: =>
+        @router.navigate "#graph/#{project}/#{name}", true
+      error: (e) -> alert e
+
+  render: ->
+    template = jQuery(@template).html()
+    @$el.html _.template template,
+      project: @project.get 'name'
+    @
+
 class views.GraphEditor extends Backbone.View
   nodeViews: null
   edgeViews: null

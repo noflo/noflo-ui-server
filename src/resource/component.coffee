@@ -98,6 +98,7 @@ exports.create = (req, res) ->
   localSourceFile = "./components/#{req.body.name}.coffee"
   fs.exists sourceFile, (exists) ->
     return res.send "Component already exists", 422 if exists
+
     fs.writeFile sourceFile, req.componentTemplate, (err) ->
       return res.send err, 500 if err
 

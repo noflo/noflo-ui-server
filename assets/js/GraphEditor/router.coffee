@@ -7,9 +7,18 @@ class window.noflo.GraphEditor.Router extends Backbone.Router
   contextBar: null
 
   routes:
+    'graph/new': 'addGraph'
     'graph/:package/:network': 'graph'
 
   initialize: ({@project, @root, @actionBar, @contextBar}) ->
+
+  addGraph: ->
+    view = new window.noflo.GraphEditor.views.AddGraph
+      router: @
+      project: @project
+      actionBar: @actionBar
+      contextBar: @contextBar
+    @root.html view.render().el
 
   prepareGraph: (graph, callback) ->
     done = _.after 3, -> callback graph

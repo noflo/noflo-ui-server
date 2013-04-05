@@ -18,11 +18,6 @@ class window.noflo.CodeEditor.Router extends Backbone.Router
   initialize: ({@project, @root, @actionBar, @contextBar}) ->
 
   addComponent: ->
-    if @project.get('components').length is 0
-      @project.get('components').fetch
-        success: =>
-          @addComponent packageId, componentId
-
     view = new window.noflo.CodeEditor.views.AddComponent
       router: @
       project: @project

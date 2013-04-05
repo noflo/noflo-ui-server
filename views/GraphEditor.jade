@@ -1,6 +1,15 @@
 script#Graph(type="text/html")
   div.editor
 
+script#AddGraph(type="text/html")
+  div.container
+    p.lead Give a name for the graph you want to create. NoFlo graphs are usually named with verbs and CamelCased
+    form.span6.text-center
+      div.input-prepend.input-append
+        span.add-on <%= project %>/
+        input#name(type="text", name="name", autofocus)
+        button#save.btn Create
+
 script#GraphNode(type="text/html")
   h4
     span <%= id %>
