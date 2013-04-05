@@ -9,6 +9,20 @@ Currently noflo-ui enables you to visualize existing NoFlo graphs on a web user 
 
 Having a proper user interface is NoFlo's [issue number 1](https://github.com/bergie/noflo/issues/1). You can follow the plans and progress also there. The current implementation is based on the [jsPlumb](http://jsplumb.org/) library, but I'm also following the progress on the [dataflow editor](http://meemoo.org/dataflow/).
 
+## Installation
+
+The NoFlo UI has not yet been published via NPM. In the meanwhile, grab this git repository and run:
+
+    $ npm install
+
+## Running
+
+This application provides the user interface for editing an existing NoFlo project. To start it, you need to point the process to the directory where your project is on the filesystem:
+
+    $./bin/noflo-ui /some/path/to/project
+
+By default, NoFlo UI runs at port *3569*. To run it under some other port, use the *-p* option.
+
 ## Visual language
 
 Flow-based programs are essentially flowcharts that you can run. You can write them in [the domain-specific FBP language](https://github.com/bergie/noflo/blob/master/examples/linecount/count.fbp), or generate [JSON](https://github.com/bergie/noflo/blob/master/examples/linecount/count.json) from external tools. But really, the best way to work with them is to do it visually.
