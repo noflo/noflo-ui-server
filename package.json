@@ -21,7 +21,9 @@
     "docco": "0.6.x",
     "marked": "0.2.x",
     "highlight.js": "7.3.x",
-    "noflo-test": "0.0.x"
+    "commander": "1.1.x",
+    "noflo-test": "0.0.x",
+    "coffee-script": "1.6.x"
   },
   "devDependencies": {
     "coffeelint": "*"

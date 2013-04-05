@@ -1,21 +1,43 @@
-#!/usr/bin/env coffee
-# vim: set filetype=coffee:
-path = require 'path'
-app = require '../src/app'
-project = require '../src/project'
+#!/usr/bin/env node
+// vim: set filetype=javascript:
 
-unless process.argv.length is 3
-  console.log "Usage: $ noflo-ui my/project/path"
-  process.exit 0
+require('coffee-script');
+var app = require('../src/app.coffee');
+var project = require('../src/project.coffee');
+var program = require('commander');
+var path = require('path');
 
-projectDir = path.resolve process.cwd(), process.argv[2]
-port = 3000
+program
+  .usage('[options] <project>')
+  .option('-p, --port <n>', 'Port for running the NoFlo UI server', parseInt, 3569)
+  .parse(process.argv);
 
-project.readProject projectDir, (err, projectData) ->
-  return console.error err if err
+var error = function (message) {
+  console.error(message);
+  process.exit(1);
+};
 
-  app.createServer projectData, (err, server) ->
-    return console.error err if err
+if (program.args.length < 1) {
+  error("Project path required");
+}
 
-    server.listen port, (err) ->
-      console.log "NoFlo listening at port #{port}"
+var projectDir = path.resolve(process.cwd(), program.args[0]);
+project.readProject(projectDir, function (err, projectData) {
+  if (err) {
+    error(err);
+  }
+
+  app.createServer(projectData, function (err, server) {
+    if (err) {
+      error(err);
+    }
+
+    server.listen(program.port, function (err) {
+      if (err) {
+        error(err);
+      }
+
+      console.log("NoFlo UI listening at port " + program.port);
+    });
+  });
+});
