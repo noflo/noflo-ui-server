@@ -13,32 +13,29 @@ class views.Graph extends Backbone.View
   template: '#Graph'
   router: null
   actionBar: null
+  contextBar: null
+  openNode: ->
 
-  initialize: (options) ->
-    @router = options.router
-    @graphs = options.graphs
-    @openNode = options.openNode
-    @closeNode = options.closeNode
+  initialize: ({@router, @graphs, @actionBar, @contextBar, @openNode}) ->
     @prepareActionBar()
 
   prepareActionBar: ->
-    @actionBar = new ActionBar
-      control:
-        label: @model.get 'name'
-        icon: 'noflo'
-        up: this.handleUp
-      actions: [
-        id: 'save'
-        label: 'Save'
-        icon: 'cloud-upload'
-        action: @save
-      ]
-    , @
+    control = @actionBar.get 'control'
+    control.set 'label', @model.get 'name'
+    control.set 'up', @handleUp
 
-  save: ->
+    actions = @actionBar.get 'actions'
+    actions.reset [
+      id: 'save'
+      label: 'Save'
+      icon: 'cloud-upload'
+      action: @save
+    ]
+
+  save: =>
     jQuery.post "#{@model.url()}/commit"
 
-  handleUp: ->
+  handleUp: =>
     @router.navigate '', true
 
   render: ->
@@ -47,7 +44,6 @@ class views.Graph extends Backbone.View
     graphData = @model.toJSON()
     graphData.name = "graph #{@model.id}" unless graphData.name
     @$el.html _.template template, graphData
-    @actionBar.show()
     @
 
   initializeEditor: ->

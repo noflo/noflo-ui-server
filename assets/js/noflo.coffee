@@ -10,30 +10,30 @@
 window.noflo = {} unless window.noflo
 
 jQuery(document).ready ->
-  rootElement = jQuery '#noflo'
-
-  reset = ->
-    # Clear toolbars when route changes
-    jQuery('.actionbar').remove()
-    jQuery('.contextbar').remove()
+  setup =
+    root: jQuery '#noflo'
+    actionBar: new ActionBar
+      control:
+        label: ''
+        icon: 'noflo'
+    contextBar: new ContextBar
 
   projects = new window.noflo.models.Projects
   projects.fetch
     success: ->
-      project = projects.at 0
-      manager = new window.noflo.GraphManager.Router
-        project: project
-        root: rootElement
-        reset: reset
-      graphEditor = new window.noflo.GraphEditor.Router
-        project: project
-        root: rootElement
-        reset: reset
-      codeEditor = new window.noflo.CodeEditor.Router
-        project: project
-        root: rootElement
-        reset: reset
+      setup.project = projects.at 0
+
+      # Configure modules
+      manager = new window.noflo.GraphManager.Router setup
+      graphEditor = new window.noflo.GraphEditor.Router setup
+      codeEditor = new window.noflo.CodeEditor.Router setup
+
+      # Start routing
       do Backbone.history.start
+
+      # Display ActionBar
+      setup.actionBar.show()
+
     error: ->
       message = 'Failed to fetch projects'
-      jQuery('#noflo').empty().append jQuery "<div>#{message}</div>"
+      setup.root.html "<div>#{message}</div>"

@@ -5,22 +5,21 @@ views = window.noflo.GraphManager.views
 class window.noflo.GraphManager.Router extends Backbone.Router
   project: null
   root: null
-  reset: ->
+  actionBar: null
+  contextBar: null
 
   routes:
     '': 'index'
 
-  initialize: (options) ->
-    @project = options.project
-    @root = options.root
-    @reset = options.reset
+  initialize: ({@project, @root, @actionBar, @contextBar}) ->
 
   index: ->
-    @reset()
     show = _.after 2, =>
-      graphsView = new views.Project
-        app: @
+      view = new views.Project
         model: @project
-      @root.html graphsView.render().el
+        router: @
+        actionBar: @actionBar
+        contextBar: @contextBar
+      @root.html view.render().el
     @project.get('graphs').fetch success: show
     @project.get('components').fetch success: show

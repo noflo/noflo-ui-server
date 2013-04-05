@@ -7,28 +7,26 @@ class views.Component extends Backbone.View
   template: '#Component'
   actionBar: null
 
-  initialize: (options) ->
-    @router = options.router
+  initialize: ({@router, @actionBar, @contextBar}) ->
     @prepareActionBar()
 
   prepareActionBar: ->
-    @actionBar = new ActionBar
-      control:
-        label: @model.get 'name'
-        icon: 'noflo'
-        up: @handleUp
-      actions: [
-        id: 'edit'
-        label: 'Edit'
-        icon: 'edit'
-        action: @handleEdit
-      ]
-    , @
+    control = @actionBar.get 'control'
+    control.set 'label', @model.get 'name'
+    control.set 'up', @handleUp
 
-  handleUp: ->
+    actions = @actionBar.get 'actions'
+    actions.reset [
+      id: 'edit'
+      label: 'Edit'
+      icon: 'edit'
+      action: @handleEdit
+    ]
+
+  handleUp: =>
     @router.navigate '', true
 
-  handleEdit: ->
+  handleEdit: =>
     @router.navigate "#component/#{@model.id}/edit", true
 
   render: ->
@@ -36,7 +34,6 @@ class views.Component extends Backbone.View
     componentData = @model.toJSON()
     componentData.name = @model.id unless componentData.name
     @$el.html _.template template, componentData
-    @actionBar.show()
     @
 
 class views.AddComponent extends Backbone.View
@@ -47,18 +44,18 @@ class views.AddComponent extends Backbone.View
     'click #save': 'save'
     'form submit': 'save'
 
-  initialize: ({@router, @project}) ->
+  initialize: ({@router, @project, @actionBar}) ->
     @prepareActionBar()
 
   prepareActionBar: ->
-    @actionBar = new ActionBar
-      control:
-        label: 'New component'
-        icon: 'noflo'
-        up: @handleUp
-    , @
+    control = @actionBar.get 'control'
+    control.set 'label', 'New component'
+    control.set 'up', @handleUp
 
-  handleUp: ->
+    actions = @actionBar.get 'actions'
+    actions.reset()
+
+  handleUp: =>
     @router.navigate '', true
 
   save: (event) ->
@@ -78,7 +75,6 @@ class views.AddComponent extends Backbone.View
     template = jQuery(@template).html()
     @$el.html _.template template,
       project: @project.get 'name'
-    @actionBar.show()
     @
 
 class views.EditComponent extends Backbone.View
@@ -87,27 +83,26 @@ class views.EditComponent extends Backbone.View
   testEditor: null
   actionBar: null
 
-  initialize: ({@router}) ->
+  initialize: ({@router, @actionBar}) ->
     @prepareActionBar()
 
   prepareActionBar: ->
-    @actionBar = new ActionBar
-      control:
-        label: @model.get 'name'
-        icon: 'noflo'
-        up: @handleUp
-      actions: [
-        id: 'save'
-        label: 'Save'
-        icon: 'cloud-upload'
-        action: @save
-      ]
-    , @
+    control = @actionBar.get 'control'
+    control.set 'label', @model.get 'name'
+    control.set 'up', @handleUp
 
-  handleUp: ->
+    actions = @actionBar.get 'actions'
+    actions.reset [
+      id: 'save'
+      label: 'Save'
+      icon: 'cloud-upload'
+      action: @save
+    ]
+
+  handleUp: =>
     @router.navigate "#component/#{@model.id}", true
 
-  save: ->
+  save: =>
     @model.save
       success: =>
         @handleUp()
@@ -117,7 +112,6 @@ class views.EditComponent extends Backbone.View
     componentData = @model.toJSON()
     componentData.name = @model.id unless componentData.name
     @$el.html _.template template, componentData
-    @actionBar.show()
     @
 
   initializeEditors: ->

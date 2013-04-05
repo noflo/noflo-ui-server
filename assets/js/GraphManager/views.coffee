@@ -6,24 +6,26 @@ window.noflo.GraphManager = {} unless window.noflo.GraphManager
 views = window.noflo.GraphManager.views = {}
 
 class views.Project extends Backbone.View
-  app: null
   template: '#Project'
   tagName: 'div'
   className: 'container'
   actionBar: null
 
-  initialize: (options) ->
-    @app = options?.app
+  initialize: ({@router, @actionBar, @contextBar}) ->
     @listenTo @model, 'change', @render
     @listenTo @model.get('graphs'), 'reset', @render
     @prepareActionBar()
     @
 
   prepareActionBar: ->
-    @actionBar = new ActionBar
-      control:
-        icon: 'noflo'
-        label: @model.get 'name'
+    @actionBar.context = @
+
+    control = @actionBar.get 'control'
+    control.set 'label', @model.get 'name'
+    control.set 'up', null
+
+    actions = @actionBar.get 'actions'
+    actions.reset()
 
   render: ->
     jQuery('body').removeClass 'grapheditor'
@@ -66,7 +68,7 @@ class views.Project extends Backbone.View
       el: jQuery '.graphs', @el
       collection: @model.get 'graphs'
       project: @model
-      app: @app
+      app: @router
     view.render()
 
   renderComponents: ->
@@ -74,7 +76,7 @@ class views.Project extends Backbone.View
       el: jQuery '.components', @el
       collection: @model.get 'components'
       project: @model
-      app: @app
+      app: @router
     view.render()
 
 class views.GraphList extends Backbone.View
