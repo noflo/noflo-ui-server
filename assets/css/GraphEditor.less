@@ -17,7 +17,10 @@ body {
 }
 
 body.grapheditor {
-  background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAI0lEQVQYV2NkYGD4D8R4gaCgIAPjqEJcYURa8ABVEwxwkE0AJg0L/3bkmgQAAAAASUVORK5CYII=');
+  background-color: #ffffff;
+  color: #000000;
+  margin: 0px;
+  padding: 0px;
 }
 
 @highdensity: ~"only screen and (-webkit-min-device-pixel-ratio: 1.5)",
@@ -28,13 +31,6 @@ body.grapheditor {
 body.grapheditor .navbar h1 {
   width: 52px;
   height: 20px;
-  background-image: url('/img/noflo.png');
-  @media @highdensity {
-    background-image: url('/img/noflo@2X.png');
-  }
-  background-size: 52px 20px;
-  background-position: top right;
-  background-repeat: no-repeat;
   margin: 0px;
   padding: 0px;
 }
@@ -43,12 +39,12 @@ body.grapheditor .navbar h1 span {
   display: none;
 }
 
-div.graph {
-  position: absolute;
-  top: 60px;
-  min-width: 100%;
-  min-height: 600px;
+div.editor {
+  width: 100%;
   font-family: 'Droid Sans', sans-serif;
+  .dataflow {
+    min-height: 1000px;
+  }
 }
 
 div.process {

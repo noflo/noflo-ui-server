@@ -70,4 +70,4 @@ exports.create = (req, res) ->
             nodeCount: 0
 
 exports.show = (req, res) ->
-  res.send prepareGraph req.graph
+  res.send req.graph.toJSON()

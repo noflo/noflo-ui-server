@@ -20,12 +20,6 @@ class window.noflo.GraphEditor.Router extends Backbone.Router
       contextBar: @contextBar
     @root.html view.render().el
 
-  prepareGraph: (graph, callback) ->
-    done = _.after 3, -> callback graph
-    graph.get('nodes').fetch success: done, reset: true
-    graph.get('edges').fetch success: done, reset: true
-    graph.fetch success: done
-
   graph: (projectId, id) ->
     if @project.get('graphs').length is 0
       @project.get('graphs').fetch
@@ -47,4 +41,4 @@ class window.noflo.GraphEditor.Router extends Backbone.Router
     @root.html view.render().el
 
     # Fetch full graph information and activate view
-    @prepareGraph graph, -> view.initializeEditor()
+    view.initializeEditor()

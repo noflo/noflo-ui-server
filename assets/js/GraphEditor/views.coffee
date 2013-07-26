@@ -1,6 +1,7 @@
 #= require ../vendor/jquery-ui
 #= require ../vendor/jquery.ui.touch-punch
-#= require ../vendor/jsplumb
+#= require ../vendor/hammer.min
+#= require ../vendor/dataflow-noflo
 
 window.noflo = {} unless window.noflo
 window.noflo.GraphEditor = {} unless window.noflo.GraphEditor
@@ -31,6 +32,7 @@ class views.Graph extends Backbone.View
       icon: 'cloud-upload'
       action: @save
     ]
+    @actionBar.hide()
 
   save: =>
     jQuery.post "#{@model.url()}/commit"
@@ -47,13 +49,34 @@ class views.Graph extends Backbone.View
     @
 
   initializeEditor: ->
-    @editorView = new views.GraphEditor
-      model: @model
-      app: @router
-      
-    container = jQuery '.editor', @el
-    container.html @editorView.render().el
-    @editorView.activate()
+    Dataflow = require('/meemoo-dataflow').Dataflow
+    require('/dataflow-noflo')
+    dataflow = new Dataflow
+      appendTo: '.editor'
+    NofloBase = Dataflow::node 'noflo-base'
+    dataflow.plugins.noflo.loadComponents = (baseDir, ready) =>
+      components = @router.project.get 'components'
+      components.fetch
+        success: ->
+          components.each (component) ->
+            newComponent = Dataflow::node component.id
+            newComponent.Model = NofloBase.Model.extend
+              defaults: ->
+                defaults = NofloBase.Model::defaults.call this
+                defaults.type = component.id
+                defaults
+              inputs: component.get('inPorts').map (port) ->
+                id: port
+                type: 'all'
+              outputs: component.get('outPorts').map (port) ->
+                id: port
+                type: 'all'
+            newComponent.View = NofloBase.View.extend()
+          do ready
+
+    noflo = require('noflo')
+    noflo.graph.loadJSON this.model.get('source'), (g) ->
+      dataflow.plugins.noflo.registerGraph g
 
 class views.AddGraph extends Backbone.View
   template: '#AddGraph'

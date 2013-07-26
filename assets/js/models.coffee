@@ -20,6 +20,7 @@ class models.Graph extends Backbone.Model
     nodes: null
 
   initialize: (attributes) ->
+    this.set 'source', attributes
     attributes ?= {}
     this.set 'nodes', new models.Nodes attributes.nodes,
       graph: @
