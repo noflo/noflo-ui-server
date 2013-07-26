@@ -196,7 +196,7 @@ require.relative = function(parent) {
   return localRequire;
 };
 require.register("meemoo-dataflow/build/dataflow.build.js", function(exports, require, module){
-/*! dataflow.js - v0.0.7 - 2013-07-26 (3:16:00 AM GMT+0200)
+/*! dataflow.js - v0.0.7 - 2013-07-26 (10:16:01 AM PDT)
 * Copyright (c) 2013 Forrest Oliphant; Licensed MIT, GPL */
 (function(Backbone) {
   var ensure = function (obj, key, type) {
@@ -1330,6 +1330,20 @@ require.register("meemoo-dataflow/build/dataflow.build.js", function(exports, re
 
 }(Dataflow) );
 
+(function(Dataflow){
+
+  var Card = Dataflow.prototype.module("card");
+
+  Card.Model = Backbone.Model.extend({
+    
+  });
+
+  Card.Collection = Backbone.Collection.extend({
+    model: Card.Model
+  });
+
+}(Dataflow));
+
 (function(Dataflow) {
 
   var Graph = Dataflow.prototype.module("graph");
@@ -1508,7 +1522,9 @@ require.register("meemoo-dataflow/build/dataflow.build.js", function(exports, re
     },
     fade: function () {
       this.model.nodes.each(function(node){
-        node.view.fade();
+        if (!node.view.$el.hasClass("ui-selected")){
+          node.view.fade();
+        }
       });
       this.model.edges.each(function(edge){
         edge.view.fade();
@@ -1563,10 +1579,10 @@ require.register("meemoo-dataflow/build/dataflow.build.js", function(exports, re
     events: function(){
       return {
         "click .dataflow-node-inspect": "showInspector",
-        "click":   "select",
-        "dragstart":     "dragStart",
-        "drag":          "drag",
-        "dragstop":      "dragStop"
+        "click .dataflow-node-header":  "select",
+        "dragstart": "dragStart",
+        "drag":      "drag",
+        "dragstop":  "dragStop"
         // "click .dataflow-node-delete": "removeModel",
         // "click .dataflow-node-cancel": "hideControls",
         // "click .dataflow-node-save":   "saveLabel"
@@ -1642,7 +1658,7 @@ require.register("meemoo-dataflow/build/dataflow.build.js", function(exports, re
     dragStart: function(event, ui){
       // Select this
       if (!this.$el.hasClass("ui-selected")){
-        this.select(event);
+        this.select(event, true);
       }
 
       // Make helper and save start position of all other selected
@@ -1757,33 +1773,20 @@ require.register("meemoo-dataflow/build/dataflow.build.js", function(exports, re
       }, this);
       this.el.style.zIndex = topZ+1;
     },
-    select: function(event){
-      if (event) {
-        // Don't click graph
-        event.stopPropagation();
-        // Called from click
-        if (event.ctrlKey || event.metaKey) {
-          // Command key is pressed, toggle selection
-          this.$el.toggleClass("ui-selected");
-        } else {
-          // Command key isn't pressed, deselect others and select this one
-          this.model.parentGraph.view.$(".ui-selected").removeClass("ui-selected");
-          this.$el.addClass("ui-selected");
-        }
-        // Bring to top
-        this.bringToTop();
-      } else {
-        // Called from code
-        this.$el.addClass("ui-selected");
-        this.bringToTop();
+    select: function(event, deselectOthers){
+      // Don't click graph
+      event.stopPropagation();
+      // De/select
+      if (deselectOthers) {
+        this.model.parentGraph.view.$(".ui-selected").removeClass("ui-selected");
       }
+      this.$el.addClass("ui-selected");
+      this.bringToTop();
+      // Fade / highlight
+      this.model.parentGraph.view.fade();
+      this.unfade();
       // Trigger
-      if ( this.$el.hasClass("ui-selected") ) {
-        this.model.trigger("select");
-        // Fade others, highlight these
-        this.model.parentGraph.view.fade();
-        this.unfade();
-      }
+      this.model.trigger("select");
       this.model.parentGraph.trigger("selectionChanged");
     },
     fade: function(){
@@ -2710,7 +2713,7 @@ require.register("meemoo-dataflow/build/dataflow.build.js", function(exports, re
     },
     click: function(event){
       // Don't click graph
-      // event.stopPropagation();
+      event.stopPropagation();
       // Highlight
       this.highlight();
       this.bringToTop();
@@ -2757,6 +2760,23 @@ require.register("meemoo-dataflow/build/dataflow.build.js", function(exports, re
   });
 
 }(Dataflow) );
+
+(function(Dataflow){
+
+  var Card = Dataflow.prototype.module("card");
+
+  Card.View = Backbone.View.extend({
+    tagName: "div",
+    initialize: function(){
+    }
+  });
+
+  Card.CollectionView = Backbone.CollectionView.extend({
+    tagName: "div",
+    itemView: Card.View
+  }); 
+
+}(Dataflow));
 
 ( function(Dataflow) {
 
@@ -5880,8 +5900,11 @@ Graph = (function(_super) {
     return this.emit('renameNode', oldId, newId);
   };
 
-  Graph.prototype.addEdge = function(outNode, outPort, inNode, inPort) {
+  Graph.prototype.addEdge = function(outNode, outPort, inNode, inPort, metadata) {
     var edge;
+    if (!metadata) {
+      metadata = {};
+    }
     edge = {
       from: {
         node: outNode,
@@ -5890,7 +5913,8 @@ Graph = (function(_super) {
       to: {
         node: inNode,
         port: inPort
-      }
+      },
+      metadata: metadata
     };
     this.edges.push(edge);
     this.emit('addEdge', edge);
@@ -6012,7 +6036,7 @@ Graph = (function(_super) {
   };
 
   Graph.prototype.toJSON = function() {
-    var edge, exported, initializer, json, node, _i, _j, _k, _l, _len, _len1, _len2, _len3, _ref, _ref1, _ref2, _ref3;
+    var connection, edge, exported, initializer, json, node, _i, _j, _k, _l, _len, _len1, _len2, _len3, _ref, _ref1, _ref2, _ref3;
     json = {
       properties: {},
       exports: [],
@@ -6043,7 +6067,7 @@ Graph = (function(_super) {
     _ref2 = this.edges;
     for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
       edge = _ref2[_k];
-      json.connections.push({
+      connection = {
         src: {
           process: edge.from.node,
           port: edge.from.port
@@ -6052,7 +6076,11 @@ Graph = (function(_super) {
           process: edge.to.node,
           port: edge.to.port
         }
-      });
+      };
+      if (Object.keys(edge.metadata).length) {
+        connection.metadata = edge.metadata;
+      }
+      json.connections.push(connection);
     }
     _ref3 = this.initializers;
     for (_l = 0, _len3 = _ref3.length; _l < _len3; _l++) {
@@ -6090,7 +6118,7 @@ exports.createGraph = function(name) {
 };
 
 exports.loadJSON = function(definition, success) {
-  var conn, def, exported, graph, id, _i, _j, _len, _len1, _ref, _ref1, _ref2;
+  var conn, def, exported, graph, id, metadata, _i, _j, _len, _len1, _ref, _ref1, _ref2;
   if (!definition.properties) {
     definition.properties = {};
   }
@@ -6116,7 +6144,8 @@ exports.loadJSON = function(definition, success) {
       graph.addInitial(conn.data, conn.tgt.process, conn.tgt.port.toLowerCase());
       continue;
     }
-    graph.addEdge(conn.src.process, conn.src.port.toLowerCase(), conn.tgt.process, conn.tgt.port.toLowerCase());
+    metadata = conn.metadata ? conn.metadata : {};
+    graph.addEdge(conn.src.process, conn.src.port.toLowerCase(), conn.tgt.process, conn.tgt.port.toLowerCase(), metadata);
   }
   if (definition.exports) {
     _ref2 = definition.exports;
@@ -6868,7 +6897,7 @@ ComponentLoader = (function() {
   };
 
   ComponentLoader.prototype.load = function(name, callback) {
-    var implementation, instance,
+    var component, componentName, implementation, instance,
       _this = this;
     if (!this.components) {
       this.listComponents(function(components) {
@@ -6876,17 +6905,26 @@ ComponentLoader = (function() {
       });
       return;
     }
-    if (!this.components[name]) {
-      throw new Error("Component " + name + " not available");
-      return;
+    component = this.components[name];
+    if (!component) {
+      for (componentName in this.components) {
+        if (componentName.split('/')[1] === name) {
+          component = this.components[componentName];
+          break;
+        }
+      }
+      if (!component) {
+        throw new Error("Component " + name + " not available");
+        return;
+      }
     }
-    if (this.isGraph(this.components[name])) {
+    if (this.isGraph(component)) {
       process.nextTick(function() {
         return _this.loadGraph(name, callback);
       });
       return;
     }
-    implementation = require(this.components[name]);
+    implementation = require(component);
     instance = implementation.getComponent();
     if (name === 'Graph') {
       instance.baseDir = this.baseDir;
@@ -8626,7 +8664,6 @@ NoFloDraggabilly = (function(_super) {
 
   NoFloDraggabilly.prototype.subscribe = function(element) {
     var draggie;
-    console.log(this.options);
     draggie = this.draggie = new Draggabilly(element, this.options);
     draggie.on('dragStart', this.dragstart);
     draggie.on('dragMove', this.dragmove);
@@ -8862,6 +8899,10 @@ DataflowNoflo.initialize = function(dataflow) {
         oldName = node.nofloNode.id;
         return nofloGraph.renameNode(oldName, newName);
       });
+      node.on("change:x change:y", function() {
+        node.nofloNode.metadata.x = node.get('x');
+        return node.nofloNode.metadata.y = node.get('y');
+      });
       return node.on("change:state", function(port, value) {
         var iip, metadata, _i, _len, _ref;
         metadata = {};
@@ -8884,8 +8925,11 @@ DataflowNoflo.initialize = function(dataflow) {
     });
     dataflow.on("edge:add", function(dfGraph, edge) {
       if (edge.nofloEdge == null) {
-        return edge.nofloEdge = nofloGraph.addEdge(edge.source.parentNode.id, edge.source.id, edge.target.parentNode.id, edge.target.id);
+        edge.nofloEdge = nofloGraph.addEdge(edge.source.parentNode.id, edge.source.id, edge.target.parentNode.id, edge.target.id);
       }
+      return edge.on('change:route', function() {
+        return edge.nofloEdge.metadata.route = edge.get('route');
+      });
     });
     dataflow.on("node:remove", function(dfGraph, node) {
       if (node.nofloNode != null) {
@@ -8947,7 +8991,8 @@ DataflowNoflo.initialize = function(dataflow) {
         target: {
           node: edge.to.node,
           port: edge.to.port
-        }
+        },
+        route: (edge.metadata.route != null ? edge.metadata.route : 0)
       });
       dfEdge.nofloEdge = edge;
       edge.dataflowEdge = dfEdge;
