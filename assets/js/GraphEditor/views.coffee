@@ -59,6 +59,9 @@ class views.Graph extends Backbone.View
       components.fetch
         success: ->
           components.each (component) ->
+            parts = component.id.split '/'
+            if parts.length is 2 and !dataflow.plugins.noflo.aliases[parts[1]]
+              dataflow.plugins.noflo.aliases[parts[1]] = component.id
             newComponent = Dataflow::node component.id
             newComponent.Model = NofloBase.Model.extend
               defaults: ->
