@@ -30,6 +30,7 @@ exports.createServer = (projectData, callback) ->
   app.use assets
     src: "#{__dirname}/../assets"
   app.use '/img', express.static "#{__dirname}/../assets/img"
+  app.use '/fonts', express.static "#{__dirname}/../assets/fonts"
 
   app.get '/', (req, res) ->
     res.render 'index', {}, (err, html) ->
