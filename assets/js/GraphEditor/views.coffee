@@ -80,7 +80,7 @@ class views.Graph extends Backbone.View
     noflo = require('noflo')
     noflo.graph.loadJSON this.model.get('source'), (g) ->
       window.graph = g
-      dataflow.plugins.noflo.registerGraph g
+      dataflow.plugins.noflo.registerGraph g, dataflow
 
 class views.AddGraph extends Backbone.View
   template: '#AddGraph'
