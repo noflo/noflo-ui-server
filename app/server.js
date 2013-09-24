@@ -12,7 +12,9 @@ module.exports = function (baseDir, callback) {
   var server = http.createServer(app);
 
   // Provide WebSocket interface to NoFlo
-  runtime(server);
+  runtime(server, {
+    baseDir: baseDir
+  });
 
   // Return prepared server to caller
   callback(null, server);
