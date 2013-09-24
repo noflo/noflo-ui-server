@@ -1,0 +1,7 @@
+{
+  "name": "noflo-ui-server",
+  "dependencies": {
+    "noflo/noflo": "*",
+    "noflo/noflo-ui": "*"
+  }
+}
