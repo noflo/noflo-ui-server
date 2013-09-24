@@ -1,2 +1,7 @@
 /node_modules
 /components
+/assets/preview/*.json
+/assets/preview/browser/noflo-noflo-runtime-iframe/html/
+/assets/preview/browser/noflo-ui-preview/
+/assets/browser/noflo-noflo-ui
+/assets/preview/browser/noflo-noflo-runtime-iframe/runtime/component.js
