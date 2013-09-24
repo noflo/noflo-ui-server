@@ -3870,6 +3870,9 @@ ComponentLoader = (function() {
       definition = require("/" + moduleName + "/component.json");
     } catch (_error) {
       e = _error;
+      if (moduleName.substr(0, 1) === '/') {
+        return this.getModuleComponents("noflo-" + (moduleName.substr(1)));
+      }
       return;
     }
     for (dependency in definition.dependencies) {
