@@ -1,34 +1,35 @@
 {
   "name": "noflo-ui",
-  "description": "Web-based user interface for the NoFlo flow-based programming toolkit",
+  "description": "Node.js server for the NoFlo Development Enviromment",
   "author": "Henri Bergius <henri.bergius@iki.fi>",
   "version": "0.0.1",
-  "licenses": [{
-    "type": "MIT",
-    "url": "https://github.com/bergie/noflo/raw/master/LICENSE"
-  }],
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/bergie/noflo/raw/master/LICENSE"
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/noflo/noflo-ui-server.git"
+  },
   "engines": {
     "node": ">=0.6.0"
   },
+  "bin": {
+    "noflo-ui": "./bin/noflo-ui"
+  },
   "dependencies": {
-    "noflo": "0.3.x",
-    "express": "3.x",
-    "express-resource": "1.x",
-    "connect-assets": "2.x",
-    "jade": "0.27.x",
-    "less": "1.3.x",
-    "underscore": "1.4.x",
-    "docco": "0.6.x",
-    "marked": "0.2.x",
-    "highlight.js": "7.3.x",
-    "commander": "1.1.x",
-    "noflo-test": "0.0.x",
-    "coffee-script": "1.6.x"
+    "noflo-runtime-websocket": "0.1.x",
+    "commander": "~2.0.0",
+    "connect": "~2.9.0"
   },
   "devDependencies": {
-    "coffeelint": "*"
-  },
-  "scripts":    {
-    "test": "./node_modules/.bin/coffeelint -r src assets"
+    "grunt": "~0.4.1",
+    "grunt-exec": "~0.4.2",
+    "component-builder": "git://github.com/bergie/builder.js.git#patch-1",
+    "component-json": "~0.1.4",
+    "component-coffee": "~0.1.4",
+    "component": "~0.17.6"
   }
 }

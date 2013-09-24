@@ -1,9 +1,6 @@
 #!/usr/bin/env node
 // vim: set filetype=javascript:
 
-require('coffee-script');
-var app = require('../src/app.coffee');
-var project = require('../src/project.coffee');
 var program = require('commander');
 var path = require('path');
 
@@ -22,22 +19,18 @@ if (program.args.length < 1) {
 }
 
 var projectDir = path.resolve(process.cwd(), program.args[0]);
-project.readProject(projectDir, function (err, projectData) {
+
+var app = require('../app/server');
+app(projectDir, function (err, server) {
   if (err) {
     error(err);
   }
 
-  app.createServer(projectData, function (err, server) {
+  server.listen(program.port, function (err) {
     if (err) {
       error(err);
     }
 
-    server.listen(program.port, function (err) {
-      if (err) {
-        error(err);
-      }
-
-      console.log("NoFlo UI listening at port " + program.port);
-    });
+    console.log("NoFlo UI listening at port " + program.port);
   });
 });
