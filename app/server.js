@@ -13,7 +13,8 @@ module.exports = function (baseDir, callback) {
 
   // Provide WebSocket interface to NoFlo
   runtime(server, {
-    baseDir: baseDir
+    baseDir: baseDir,
+    catchExceptions: true
   });
 
   // Return prepared server to caller
