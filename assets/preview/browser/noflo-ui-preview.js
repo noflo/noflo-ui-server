@@ -2737,7 +2737,7 @@ module.exports = (function(){
 })();
 });
 require.register("noflo-noflo/component.json", function(exports, require, module){
-module.exports = JSON.parse('{"name":"noflo","description":"Flow-Based Programming environment for JavaScript","keywords":["fbp","workflow","flow"],"repo":"noflo/noflo","version":"0.4.0","dependencies":{"component/emitter":"*","component/underscore":"*","noflo/fbp":"*"},"development":{},"license":"MIT","main":"src/lib/NoFlo.js","scripts":["src/lib/Graph.coffee","src/lib/InternalSocket.coffee","src/lib/Port.coffee","src/lib/ArrayPort.coffee","src/lib/Component.coffee","src/lib/AsyncComponent.coffee","src/lib/LoggingComponent.coffee","src/lib/ComponentLoader.coffee","src/lib/NoFlo.coffee","src/lib/Network.coffee","src/components/Graph.coffee"],"json":["component.json"],"noflo":{"components":{"Graph":"src/components/Graph.js"}}}');
+module.exports = JSON.parse('{"name":"noflo","description":"Flow-Based Programming environment for JavaScript","keywords":["fbp","workflow","flow"],"repo":"noflo/noflo","version":"0.4.1","dependencies":{"component/emitter":"*","component/underscore":"*","noflo/fbp":"*"},"development":{},"license":"MIT","main":"src/lib/NoFlo.js","scripts":["src/lib/Graph.coffee","src/lib/InternalSocket.coffee","src/lib/Port.coffee","src/lib/ArrayPort.coffee","src/lib/Component.coffee","src/lib/AsyncComponent.coffee","src/lib/LoggingComponent.coffee","src/lib/ComponentLoader.coffee","src/lib/NoFlo.coffee","src/lib/Network.coffee","src/components/Graph.coffee"],"json":["component.json"],"noflo":{"components":{"Graph":"src/components/Graph.js"}}}');
 });
 require.register("noflo-noflo/src/lib/Graph.js", function(exports, require, module){
 var EventEmitter, Graph,
@@ -2878,6 +2878,12 @@ Graph = (function(_super) {
 
   Graph.prototype.addEdge = function(outNode, outPort, inNode, inPort, metadata) {
     var edge;
+    if (!this.getNode(outNode)) {
+      return;
+    }
+    if (!this.getNode(inNode)) {
+      return;
+    }
     if (!metadata) {
       metadata = {};
     }
@@ -2932,6 +2938,9 @@ Graph = (function(_super) {
 
   Graph.prototype.addInitial = function(data, node, port, metadata) {
     var initializer;
+    if (!this.getNode(node)) {
+      return;
+    }
     initializer = {
       from: {
         data: data
@@ -3284,11 +3293,20 @@ Port = (function(_super) {
     }
     this.socket = null;
     this.from = null;
+    this.node = null;
+    this.name = null;
   }
+
+  Port.prototype.getId = function() {
+    if (!(this.node && this.name)) {
+      return 'Port';
+    }
+    return "" + this.node + " " + (this.name.toUpperCase());
+  };
 
   Port.prototype.attach = function(socket) {
     if (this.isAttached()) {
-      throw new Error("" + this.name + ": Socket already attached " + (this.socket.getId()) + " - " + (socket.getId()));
+      throw new Error("" + (this.getId()) + ": Socket already attached " + (this.socket.getId()) + " - " + (socket.getId()));
     }
     this.socket = socket;
     return this.attachSocket(socket);
@@ -3323,7 +3341,7 @@ Port = (function(_super) {
 
   Port.prototype.connect = function() {
     if (!this.socket) {
-      throw new Error("No connection available");
+      throw new Error("" + (this.getId()) + ": No connection available");
     }
     return this.socket.connect();
   };
@@ -3331,7 +3349,7 @@ Port = (function(_super) {
   Port.prototype.beginGroup = function(group) {
     var _this = this;
     if (!this.socket) {
-      throw new Error("No connection available");
+      throw new Error("" + (this.getId()) + ": No connection available");
     }
     if (this.isConnected()) {
       return this.socket.beginGroup(group);
@@ -3345,7 +3363,7 @@ Port = (function(_super) {
   Port.prototype.send = function(data) {
     var _this = this;
     if (!this.socket) {
-      throw new Error("No connection available");
+      throw new Error("" + (this.getId()) + ": No connection available");
     }
     if (this.isConnected()) {
       return this.socket.send(data);
@@ -3358,14 +3376,14 @@ Port = (function(_super) {
 
   Port.prototype.endGroup = function() {
     if (!this.socket) {
-      throw new Error("No connection available");
+      throw new Error("" + (this.getId()) + ": No connection available");
     }
     return this.socket.endGroup();
   };
 
   Port.prototype.disconnect = function() {
     if (!this.socket) {
-      throw new Error("No connection available");
+      throw new Error("" + (this.getId()) + ": No connection available");
     }
     return this.socket.disconnect();
   };
@@ -3426,7 +3444,7 @@ ArrayPort = (function(_super) {
     }
     if (socketId === null) {
       if (!this.sockets.length) {
-        throw new Error("No sockets available");
+        throw new Error("" + (this.getId()) + ": No connections available");
       }
       this.sockets.forEach(function(socket) {
         return socket.connect();
@@ -3434,7 +3452,7 @@ ArrayPort = (function(_super) {
       return;
     }
     if (!this.sockets[socketId]) {
-      throw new Error("No socket '" + socketId + "' available");
+      throw new Error("" + (this.getId()) + ": No connection '" + socketId + "' available");
     }
     return this.sockets[socketId].connect();
   };
@@ -3446,7 +3464,7 @@ ArrayPort = (function(_super) {
     }
     if (socketId === null) {
       if (!this.sockets.length) {
-        throw new Error("No sockets available");
+        throw new Error("" + (this.getId()) + ": No connections available");
       }
       this.sockets.forEach(function(socket, index) {
         return _this.beginGroup(group, index);
@@ -3454,7 +3472,7 @@ ArrayPort = (function(_super) {
       return;
     }
     if (!this.sockets[socketId]) {
-      throw new Error("No socket '" + socketId + "' available");
+      throw new Error("" + (this.getId()) + ": No connection '" + socketId + "' available");
     }
     if (this.isConnected(socketId)) {
       return this.sockets[socketId].beginGroup(group);
@@ -3472,7 +3490,7 @@ ArrayPort = (function(_super) {
     }
     if (socketId === null) {
       if (!this.sockets.length) {
-        throw new Error("No sockets available");
+        throw new Error("" + (this.getId()) + ": No connections available");
       }
       this.sockets.forEach(function(socket, index) {
         return _this.send(data, index);
@@ -3480,7 +3498,7 @@ ArrayPort = (function(_super) {
       return;
     }
     if (!this.sockets[socketId]) {
-      throw new Error("No socket '" + socketId + "' available");
+      throw new Error("" + (this.getId()) + ": No connection '" + socketId + "' available");
     }
     if (this.isConnected(socketId)) {
       return this.sockets[socketId].send(data);
@@ -3498,7 +3516,7 @@ ArrayPort = (function(_super) {
     }
     if (socketId === null) {
       if (!this.sockets.length) {
-        throw new Error("No sockets available");
+        throw new Error("" + (this.getId()) + ": No connections available");
       }
       this.sockets.forEach(function(socket, index) {
         return _this.endGroup(index);
@@ -3506,7 +3524,7 @@ ArrayPort = (function(_super) {
       return;
     }
     if (!this.sockets[socketId]) {
-      throw new Error("No socket '" + socketId + "' available");
+      throw new Error("" + (this.getId()) + ": No connection '" + socketId + "' available");
     }
     return this.sockets[socketId].endGroup();
   };
@@ -3518,7 +3536,7 @@ ArrayPort = (function(_super) {
     }
     if (socketId === null) {
       if (!this.sockets.length) {
-        throw new Error("No sockets available");
+        throw new Error("" + (this.getId()) + ": No connections available");
       }
       _ref = this.sockets;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -4052,7 +4070,7 @@ exports.createNetwork = function(graph, callback, delay) {
     if (callback != null) {
       callback(network);
     }
-    return network.sendInitials();
+    return network.start();
   };
   if (graph.nodes.length === 0) {
     setTimeout(function() {
@@ -4133,7 +4151,6 @@ Network = (function(_super) {
       this.baseDir = graph.baseDir || '/';
     }
     this.startupDate = new Date();
-    this.handleStartEnd();
     this.graph.on('addNode', function(node) {
       return _this.addNode(node);
     });
@@ -4162,49 +4179,34 @@ Network = (function(_super) {
     return new Date() - this.startupDate;
   };
 
-  Network.prototype.handleStartEnd = function() {
-    var connections, ended, started, timeOut,
+  Network.prototype.connectionCount = 0;
+
+  Network.prototype.increaseConnections = function() {
+    if (this.connectionCount === 0) {
+      this.emit('start', {
+        start: this.startupDate
+      });
+    }
+    return this.connectionCount++;
+  };
+
+  Network.prototype.decreaseConnections = function() {
+    var ender,
       _this = this;
-    connections = 0;
-    started = false;
-    ended = false;
-    timeOut = null;
-    this.on('connect', function(data) {
-      if (!data.socket.from) {
-        return;
-      }
-      if (timeOut) {
-        clearTimeout(timeOut);
-      }
-      if (connections === 0 && !started) {
-        _this.emit('start', {
-          start: _this.startupDate
-        });
-        started = true;
-      }
-      return connections++;
-    });
-    return this.on('disconnect', function(data) {
-      if (!data.socket.from) {
-        return;
-      }
-      connections--;
-      if (!(connections <= 0)) {
-        return;
-      }
-      return timeOut = setTimeout(function() {
-        if (ended) {
+    this.connectionCount--;
+    if (this.connectionCount === 0) {
+      ender = _.debounce(function() {
+        if (_this.connectionCount) {
           return;
         }
-        _this.emit('end', {
+        return _this.emit('end', {
           start: _this.startupDate,
           end: new Date,
           uptime: _this.uptime()
         });
-        started = false;
-        return ended = true;
       }, 10);
-    });
+      return ender();
+    }
   };
 
   Network.prototype.load = function(component, callback) {
@@ -4234,8 +4236,21 @@ Network = (function(_super) {
       return;
     }
     return this.load(node.component, function(instance) {
+      var name, port, _ref, _ref1;
       instance.nodeId = node.id;
       process.component = instance;
+      _ref = process.component.inPorts;
+      for (name in _ref) {
+        port = _ref[name];
+        port.node = node.id;
+        port.name = name;
+      }
+      _ref1 = process.component.outPorts;
+      for (name in _ref1) {
+        port = _ref1[name];
+        port.node = node.id;
+        port.name = name;
+      }
       if (instance.isSubgraph()) {
         _this.subscribeSubgraph(node.id, instance);
       }
@@ -4255,12 +4270,22 @@ Network = (function(_super) {
   };
 
   Network.prototype.renameNode = function(oldId, newId) {
-    var process;
+    var name, port, process, _ref, _ref1;
     process = this.getNode(oldId);
     if (!process) {
       return;
     }
     process.id = newId;
+    _ref = process.component.inPorts;
+    for (name in _ref) {
+      port = _ref[name];
+      port.node = newId;
+    }
+    _ref1 = process.component.outPorts;
+    for (name in _ref1) {
+      port = _ref1[name];
+      port.node = newId;
+    }
     this.processes[newId] = process;
     return delete this.processes[oldId];
   };
@@ -4327,6 +4352,12 @@ Network = (function(_super) {
       return;
     }
     emitSub = function(type, data) {
+      if (type === 'connect') {
+        _this.increaseConnections();
+      }
+      if (type === 'disconnect') {
+        _this.decreaseConnections();
+      }
       if (!data) {
         data = {};
       }
@@ -4357,6 +4388,7 @@ Network = (function(_super) {
   Network.prototype.subscribeSocket = function(socket) {
     var _this = this;
     socket.on('connect', function() {
+      _this.increaseConnections();
       return _this.emit('connect', {
         id: socket.getId(),
         socket: socket
@@ -4384,6 +4416,7 @@ Network = (function(_super) {
       });
     });
     return socket.on('disconnect', function() {
+      _this.decreaseConnections();
       return _this.emit('disconnect', {
         id: socket.getId(),
         socket: socket
@@ -4521,6 +4554,29 @@ Network = (function(_super) {
     } else {
       return setTimeout(send, 0);
     }
+  };
+
+  Network.prototype.start = function() {
+    return this.sendInitials();
+  };
+
+  Network.prototype.stop = function() {
+    var connection, id, process, _i, _len, _ref, _ref1, _results;
+    _ref = this.connections;
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      connection = _ref[_i];
+      if (!connection.isConnected()) {
+        continue;
+      }
+      connection.disconnect();
+    }
+    _ref1 = this.processes;
+    _results = [];
+    for (id in _ref1) {
+      process = _ref1[id];
+      _results.push(process.component.shutdown());
+    }
+    return _results;
   };
 
   return Network;
@@ -4732,7 +4788,11 @@ protocols = {
 };
 
 BaseTransport = (function() {
-  function BaseTransport() {
+  function BaseTransport(options) {
+    this.options = options;
+    if (!this.options) {
+      this.options = {};
+    }
     this.graph = new protocols.Graph(this);
     this.network = new protocols.Network(this);
     this.component = new protocols.Component(this);
@@ -4805,6 +4865,9 @@ GraphProtocol = (function() {
     }
     graph = new noflo.Graph(payload.name);
     graph.baseDir = payload.baseDir;
+    if (this.transport.options.baseDir) {
+      graph.baseDir = this.transport.options.baseDir;
+    }
     this.subscribeGraph(graph, context);
     return graph;
   };
@@ -4937,6 +5000,7 @@ prepareSocketEvent = function(event) {
 NetworkProtocol = (function() {
   function NetworkProtocol(transport) {
     this.transport = transport;
+    this.network = null;
   }
 
   NetworkProtocol.prototype.send = function(topic, payload, context) {
@@ -4947,6 +5011,8 @@ NetworkProtocol = (function() {
     switch (topic) {
       case 'start':
         return this.initNetwork(this.transport.graph.graph, context);
+      case 'stop':
+        return this.stopNetwork(this.network, context);
     }
   };
 
@@ -4958,6 +5024,7 @@ NetworkProtocol = (function() {
     }
     return noflo.createNetwork(graph, function(network) {
       _this.subscribeNetwork(network, context);
+      _this.network = network;
       return network.connect(function() {
         network.sendInitials();
         return graph.on('addInitial', function() {
@@ -4970,7 +5037,7 @@ NetworkProtocol = (function() {
   NetworkProtocol.prototype.subscribeNetwork = function(network, context) {
     var _this = this;
     network.on('start', function(event) {
-      return _this.send('start', event.start, context);
+      return _this.send('started', event.start, context);
     });
     network.on('connect', function(event) {
       return _this.send('connect', prepareSocketEvent(event), context);
@@ -4987,9 +5054,16 @@ NetworkProtocol = (function() {
     network.on('disconnect', function(event) {
       return _this.send('disconnect', prepareSocketEvent(event), context);
     });
-    return network.on('stop', function(event) {
-      return _this.send('stop', event.uptime, context);
+    return network.on('end', function(event) {
+      return _this.send('stopped', event.uptime, context);
     });
+  };
+
+  NetworkProtocol.prototype.stopNetwork = function(network, context) {
+    if (!network) {
+      return;
+    }
+    return network.stop();
   };
 
   return NetworkProtocol;
@@ -5023,6 +5097,9 @@ ComponentProtocol = (function() {
   ComponentProtocol.prototype.listComponents = function(baseDir, context) {
     var loader,
       _this = this;
+    if (this.transport.options.baseDir) {
+      baseDir = this.transport.options.baseDir;
+    }
     loader = new noflo.ComponentLoader(baseDir);
     return loader.listComponents(function(components) {
       return Object.keys(components).forEach(function(component) {
@@ -5794,35 +5871,47 @@ RunInterval = (function(_super) {
 
   function RunInterval() {
     var _this = this;
+    this.timer = null;
     this.interval = null;
     this.inPorts = {
       interval: new noflo.Port('number'),
+      start: new noflo.Port('bang'),
       stop: new noflo.Port('bang')
     };
     this.outPorts = {
       out: new noflo.Port('bang')
     };
     this.inPorts.interval.on('data', function(interval) {
-      if (_this.interval) {
-        clearInterval(_this.interval);
+      _this.interval = interval;
+      if (_this.timer != null) {
+        clearInterval(_this.timer);
+        return _this.timer = setInterval(function() {
+          return _this.outPorts.out.send(true);
+        }, _this.interval);
+      }
+    });
+    this.inPorts.start.on('data', function() {
+      if (_this.timer != null) {
+        clearInterval(_this.timer);
       }
       _this.outPorts.out.connect();
-      return _this.interval = setInterval(function() {
+      return _this.timer = setInterval(function() {
         return _this.outPorts.out.send(true);
-      }, interval);
+      }, _this.interval);
     });
     this.inPorts.stop.on('data', function() {
-      if (!_this.interval) {
+      if (!_this.timer) {
         return;
       }
-      clearInterval(_this.interval);
+      clearInterval(_this.timer);
+      _this.timer = null;
       return _this.outPorts.out.disconnect();
     });
   }
 
   RunInterval.prototype.shutdown = function() {
-    if (this.interval) {
-      return clearInterval(this.interval);
+    if (this.timer != null) {
+      return clearInterval(this.timer);
     }
   };
 
@@ -5921,7 +6010,7 @@ require.register("noflo-noflo-css/index.js", function(exports, require, module){
 
 });
 require.register("noflo-noflo-css/component.json", function(exports, require, module){
-module.exports = JSON.parse('{"name":"noflo-css","description":"Cascading Style Sheets components for NoFlo","author":"Henri Bergius <henri.bergius@iki.fi>","repo":"noflo/noflo-css","version":"0.0.1","keywords":[],"dependencies":{"noflo/noflo":"*"},"scripts":["components/MoveElement.coffee","components/RotateElement.coffee","index.js"],"json":["component.json"],"noflo":{"components":{"MoveElement":"components/MoveElement.coffee","RotateElement":"components/RotateElement.coffee"}}}');
+module.exports = JSON.parse('{"name":"noflo-css","description":"Cascading Style Sheets components for NoFlo","author":"Henri Bergius <henri.bergius@iki.fi>","repo":"noflo/noflo-css","version":"0.0.1","keywords":[],"dependencies":{"noflo/noflo":"*"},"scripts":["components/MoveElement.coffee","components/RotateElement.coffee","components/SetElementTop.coffee","index.js"],"json":["component.json"],"noflo":{"components":{"MoveElement":"components/MoveElement.coffee","RotateElement":"components/RotateElement.coffee","SetElementTop":"components/SetElementTop.coffee"}}}');
 });
 require.register("noflo-noflo-css/components/MoveElement.js", function(exports, require, module){
 var MoveElement, noflo,
@@ -5989,21 +6078,29 @@ RotateElement = (function(_super) {
     this.element = null;
     this.inPorts = {
       element: new noflo.Port('object'),
-      percent: new noflo.Port('number')
+      percent: new noflo.Port('number'),
+      degrees: new noflo.Port('number')
     };
     this.inPorts.element.on('data', function(element) {
       return _this.element = element;
     });
     this.inPorts.percent.on('data', function(percent) {
-      if (_this.element) {
-        return _this.setRotation(_this.element, percent);
+      var degrees;
+      if (!_this.element) {
+        return;
       }
+      degrees = 360 * percent % 360;
+      return _this.setRotation(_this.element, degrees);
+    });
+    this.inPorts.degrees.on('data', function(degrees) {
+      if (!_this.element) {
+        return;
+      }
+      return _this.setRotation(_this.element, degrees);
     });
   }
 
-  RotateElement.prototype.setRotation = function(element, percent) {
-    var degrees;
-    degrees = 360 * percent % 360;
+  RotateElement.prototype.setRotation = function(element, degrees) {
     return this.setVendor(element, "transform", "rotate(" + degrees + "deg)");
   };
 
@@ -6023,6 +6120,46 @@ RotateElement = (function(_super) {
 
 exports.getComponent = function() {
   return new RotateElement;
+};
+
+});
+require.register("noflo-noflo-css/components/SetElementTop.js", function(exports, require, module){
+var SetElementTop, noflo,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+noflo = require('noflo');
+
+SetElementTop = (function(_super) {
+  __extends(SetElementTop, _super);
+
+  SetElementTop.prototype.description = 'Set element\'s CSS top';
+
+  function SetElementTop() {
+    var _this = this;
+    this.element = null;
+    this.inPorts = {
+      element: new noflo.Port('object'),
+      top: new noflo.Port('number')
+    };
+    this.inPorts.element.on('data', function(element) {
+      return _this.element = element;
+    });
+    this.inPorts.top.on('data', function(top) {
+      if (!_this.element) {
+        return;
+      }
+      _this.element.style.position = 'absolute';
+      return _this.element.style.top = "" + top + "px";
+    });
+  }
+
+  return SetElementTop;
+
+})(noflo.Component);
+
+exports.getComponent = function() {
+  return new SetElementTop;
 };
 
 });
@@ -6501,7 +6638,7 @@ RequestAnimationFrame = (function(_super) {
       stop: new noflo.Port('bang')
     };
     this.outPorts = {
-      frame: new noflo.Port('bang')
+      out: new noflo.Port('bang')
     };
     this.inPorts.start.on('data', function(data) {
       _this.running = true;
@@ -6515,7 +6652,7 @@ RequestAnimationFrame = (function(_super) {
   RequestAnimationFrame.prototype.animate = function() {
     if (this.running) {
       requestAnimationFrame(this.animate.bind(this));
-      return this.outPorts.frame.send(true);
+      return this.outPorts.out.send(true);
     }
   };
 
@@ -6618,7 +6755,7 @@ require.register("noflo-noflo-interaction/index.js", function(exports, require, 
 
 });
 require.register("noflo-noflo-interaction/component.json", function(exports, require, module){
-module.exports = JSON.parse('{"name":"noflo-interaction","description":"User interaction components for NoFlo","author":"Henri Bergius <henri.bergius@iki.fi>","repo":"noflo/noflo-interaction","version":"0.0.1","keywords":[],"dependencies":{"noflo/noflo":"*"},"scripts":["components/ListenDrag.coffee","components/ListenHash.coffee","components/ListenKeyboard.coffee","components/ListenMouse.coffee","components/ListenScroll.coffee","components/ListenTouch.coffee","components/SetHash.coffee","index.js"],"json":["component.json"],"noflo":{"components":{"ListenDrag":"components/ListenDrag.coffee","ListenHash":"components/ListenHash.coffee","ListenKeyboard":"components/ListenKeyboard.coffee","ListenMouse":"components/ListenMouse.coffee","ListenScroll":"components/ListenScroll.coffee","ListenTouch":"components/ListenTouch.coffee","SetHash":"components/SetHash.coffee"}}}');
+module.exports = JSON.parse('{"name":"noflo-interaction","description":"User interaction components for NoFlo","author":"Henri Bergius <henri.bergius@iki.fi>","repo":"noflo/noflo-interaction","version":"0.0.1","keywords":[],"dependencies":{"noflo/noflo":"*"},"scripts":["components/ListenDrag.coffee","components/ListenHash.coffee","components/ListenKeyboard.coffee","components/ListenMouse.coffee","components/ListenScroll.coffee","components/ListenSpeech.coffee","components/ListenTouch.coffee","components/SetHash.coffee","index.js"],"json":["component.json"],"noflo":{"components":{"ListenDrag":"components/ListenDrag.coffee","ListenHash":"components/ListenHash.coffee","ListenKeyboard":"components/ListenKeyboard.coffee","ListenMouse":"components/ListenMouse.coffee","ListenScroll":"components/ListenScroll.coffee","ListenSpeech":"components/ListenSpeech.coffee","ListenTouch":"components/ListenTouch.coffee","SetHash":"components/SetHash.coffee"}}}');
 });
 require.register("noflo-noflo-interaction/components/ListenDrag.js", function(exports, require, module){
 var ListenDrag, noflo,
@@ -6705,6 +6842,8 @@ noflo = require('noflo');
 ListenHash = (function(_super) {
   __extends(ListenHash, _super);
 
+  ListenHash.prototype.description = 'Listen for hash changes in browser\'s URL bar';
+
   function ListenHash() {
     this.hashChange = __bind(this.hashChange, this);
     var _this = this;
@@ -6778,6 +6917,8 @@ noflo = require('noflo');
 
 ListenKeyboard = (function(_super) {
   __extends(ListenKeyboard, _super);
+
+  ListenKeyboard.prototype.description = 'Listen for key presses on a given DOM element';
 
   function ListenKeyboard() {
     this.keypress = __bind(this.keypress, this);
@@ -6913,7 +7054,7 @@ noflo = require('noflo');
 ListenScroll = (function(_super) {
   __extends(ListenScroll, _super);
 
-  ListenScroll.prototype.description = 'Listen to scroll events';
+  ListenScroll.prototype.description = 'Listen to scroll events on the browser window';
 
   function ListenScroll() {
     this.scroll = __bind(this.scroll, this);
@@ -6978,6 +7119,103 @@ ListenScroll = (function(_super) {
 
 exports.getComponent = function() {
   return new ListenScroll;
+};
+
+});
+require.register("noflo-noflo-interaction/components/ListenSpeech.js", function(exports, require, module){
+var ListenSpeech, noflo,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+noflo = require('noflo');
+
+ListenSpeech = (function(_super) {
+  __extends(ListenSpeech, _super);
+
+  ListenSpeech.prototype.description = 'Listen for user\'s microphone and recognize phrases';
+
+  function ListenSpeech() {
+    this.handleError = __bind(this.handleError, this);
+    this.handleResult = __bind(this.handleResult, this);
+    var _this = this;
+    this.recognition = false;
+    this.sent = [];
+    this.inPorts = {
+      start: new noflo.Port('bang'),
+      stop: new noflo.Port('bang')
+    };
+    this.outPorts = {
+      result: new noflo.Port('string'),
+      error: new noflo.Port('object')
+    };
+    this.inPorts.start.on('data', function() {
+      return _this.startListening();
+    });
+    this.inPorts.stop.on('data', function() {
+      return _this.stopListening();
+    });
+  }
+
+  ListenSpeech.prototype.startListening = function() {
+    if (!window.webkitSpeechRecognition) {
+      this.handleError(new Error('Speech recognition support not available'));
+    }
+    this.recognition = new window.webkitSpeechRecognition;
+    this.recognition.continuous = true;
+    this.recognition.start();
+    this.outPorts.result.connect();
+    this.recognition.onresult = this.handleResult;
+    return this.recognition.onerror = this.handleError;
+  };
+
+  ListenSpeech.prototype.handleResult = function(event) {
+    var idx, result, _i, _len, _ref, _results;
+    _ref = event.results;
+    _results = [];
+    for (idx = _i = 0, _len = _ref.length; _i < _len; idx = ++_i) {
+      result = _ref[idx];
+      if (!result.isFinal) {
+        continue;
+      }
+      if (this.sent.indexOf(idx) !== -1) {
+        continue;
+      }
+      this.outPorts.result.send(result[0].transcript);
+      _results.push(this.sent.push(idx));
+    }
+    return _results;
+  };
+
+  ListenSpeech.prototype.handleError = function(error) {
+    if (this.outPorts.error.isAttached()) {
+      this.outPorts.error.send(error);
+      this.outPorts.error.disconnect();
+      return;
+    }
+    throw error;
+  };
+
+  ListenSpeech.prototype.stopListening = function() {
+    if (!this.recognition) {
+      return;
+    }
+    this.outPorts.result.disconnect();
+    this.recognition.stop();
+    this.recognition = null;
+    return this.sent = [];
+  };
+
+  ListenSpeech.prototype.shutdown = function() {
+    return this.stopListening();
+  };
+
+  return ListenSpeech;
+
+})(noflo.Component);
+
+exports.getComponent = function() {
+  return new ListenSpeech;
 };
 
 });
@@ -9996,6 +10234,219 @@ exports.getComponent = function() {
 };
 
 });
+require.register("noflo-noflo-websocket/index.js", function(exports, require, module){
+/*
+ * This file can be used for general library features of noflo-websocket.
+ *
+ * The library features can be made available as CommonJS modules that the
+ * components in this project utilize.
+ */
+
+});
+require.register("noflo-noflo-websocket/component.json", function(exports, require, module){
+module.exports = JSON.parse('{"name":"noflo-websocket","description":"WebSocket components for NoFlo","author":"Henri Bergius <henri.bergius@iki.fi>","repo":"noflo/noflo-websocket","version":"0.1.0","keywords":[],"dependencies":{"noflo/noflo":"*"},"scripts":["components/Connect.coffee","components/SendMessage.coffee","components/ListenMessages.coffee","index.js"],"json":["component.json"],"noflo":{"components":{"Connect":"components/Connect.coffee","SendMessage":"components/SendMessage.coffee","ListenMessages":"components/ListenMessages.coffee"}}}');
+});
+require.register("noflo-noflo-websocket/components/Connect.js", function(exports, require, module){
+var Connect, WsClient, noflo,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+noflo = require('noflo');
+
+if (noflo.isBrowser()) {
+  WsClient = WebSocket;
+} else {
+  WsClient = require('websocket').client;
+}
+
+Connect = (function(_super) {
+  __extends(Connect, _super);
+
+  function Connect() {
+    this.handleError = __bind(this.handleError, this);
+    var _this = this;
+    this.protocol = 'noflo';
+    this.inPorts = {
+      url: new noflo.Port('string'),
+      protocol: new noflo.Port('string')
+    };
+    this.outPorts = {
+      connection: new noflo.Port('object'),
+      error: new noflo.Port('object')
+    };
+    this.inPorts.url.on('data', function(data) {
+      return _this.connect(data);
+    });
+    this.inPorts.protocol.on('data', function(protocol) {
+      _this.protocol = protocol;
+    });
+  }
+
+  Connect.prototype.connect = function(url) {
+    var client,
+      _this = this;
+    if (noflo.isBrowser()) {
+      client = new WsClient(url, this.protocol);
+      client.onerror = this.handleError;
+      client.onopen = function() {
+        return _this.outPorts.connection.send(client);
+      };
+      return;
+    }
+    client = new WsClient;
+    client.on('connect', function(connection) {
+      _this.outPorts.connection.send(connection);
+      return connection.on('error', _this.handleError);
+    });
+    client.on('connectFailed', this.handleError);
+    return client.connect(url, this.protocol);
+  };
+
+  Connect.prototype.handleError = function(err) {
+    if (this.outPorts.error.isAttached()) {
+      this.outPorts.error.send(err);
+      this.outPorts.error.disconnect();
+      return;
+    }
+    throw err;
+  };
+
+  return Connect;
+
+})(noflo.Component);
+
+exports.getComponent = function() {
+  return new Connect;
+};
+
+});
+require.register("noflo-noflo-websocket/components/SendMessage.js", function(exports, require, module){
+var SendMessage, noflo,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+noflo = require('noflo');
+
+SendMessage = (function(_super) {
+  __extends(SendMessage, _super);
+
+  function SendMessage() {
+    var _this = this;
+    this.connection = null;
+    this.buffer = [];
+    this.inPorts = {
+      connection: new noflo.Port('object'),
+      string: new noflo.Port('string')
+    };
+    this.outPorts = {};
+    this.inPorts.connection.on('data', function(connection) {
+      _this.connection = connection;
+      if (_this.buffer.length) {
+        return _this.clearBuffer();
+      }
+    });
+    this.inPorts.string.on('data', function(data) {
+      if (_this.connection) {
+        return _this.send(data);
+      }
+      return _this.buffer.push(data);
+    });
+  }
+
+  SendMessage.prototype.send = function(message) {
+    if (noflo.isBrowser()) {
+      this.connection.send(message);
+      return;
+    }
+    return this.connection.sendUTF(message);
+  };
+
+  SendMessage.prototype.clearBuffer = function() {
+    var message, _i, _len, _ref;
+    _ref = this.buffer;
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      message = _ref[_i];
+      this.send(message);
+    }
+    return this.buffer = [];
+  };
+
+  return SendMessage;
+
+})(noflo.Component);
+
+exports.getComponent = function() {
+  return new SendMessage;
+};
+
+});
+require.register("noflo-noflo-websocket/components/ListenMessages.js", function(exports, require, module){
+var ListenMessages, noflo,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+noflo = require('noflo');
+
+ListenMessages = (function(_super) {
+  __extends(ListenMessages, _super);
+
+  function ListenMessages() {
+    var _this = this;
+    this.inPorts = {
+      connection: new noflo.Port('object')
+    };
+    this.outPorts = {
+      string: new noflo.Port('string'),
+      binary: new noflo.Port('binary')
+    };
+    this.inPorts.connection.on('data', function(data) {
+      return _this.subscribe(data);
+    });
+  }
+
+  ListenMessages.prototype.subscribe = function(connection) {
+    var _this = this;
+    if (noflo.isBrowser()) {
+      if (!this.outPorts.string.isAttached()) {
+        return;
+      }
+      connection.addEventListener('message', function(message) {
+        return _this.outPorts.string.send(message.data);
+      }, false);
+      connection.addEventListener('close', function(message) {
+        return _this.outPorts.string.disconnect();
+      }, false);
+      return;
+    }
+    connection.on('message', function(message) {
+      if (message.type === 'utf8' && _this.outPorts.string.isAttached()) {
+        _this.outPorts.string.send(message.utf8Data);
+        return;
+      }
+      if (message.type === 'binary' && _this.outPorts.binary.isAttached()) {
+        _this.outPorts.binary.send(message.binaryData);
+      }
+    });
+    return connection.on('close', function() {
+      if (_this.outPorts.string.isAttached()) {
+        _this.outPorts.string.disconnect();
+      }
+      if (_this.outPorts.binary.isAttached()) {
+        return _this.outPorts.binary.disconnect();
+      }
+    });
+  };
+
+  return ListenMessages;
+
+})(noflo.Component);
+
+exports.getComponent = function() {
+  return new ListenMessages;
+};
+
+});
 require.register("d4tocchini-noflo-draggabilly/index.js", function(exports, require, module){
 /*
  * This file can be used for general library features that are exposed as CommonJS modules
@@ -10113,8 +10564,9 @@ exports.getComponent = function() {
 
 });
 require.register("noflo-ui-preview/component.json", function(exports, require, module){
-module.exports = JSON.parse('{"name":"noflo-ui-preview","description":"NoFlo runtime environment for client-side previews","author":"Henri Bergius <henri.bergius@iki.fi>","repo":"noflo/noflo-ui","keywords":[],"dependencies":{"noflo/noflo":"*","noflo/noflo-runtime-iframe":"*","noflo/noflo-ajax":"*","noflo/noflo-core":"*","noflo/noflo-css":"*","noflo/noflo-dom":"*","noflo/noflo-flow":"*","noflo/noflo-interaction":"*","noflo/noflo-localstorage":"*","noflo/noflo-math":"*","noflo/noflo-objects":"*","noflo/noflo-physics":"*","noflo/noflo-strings":"*","d4tocchini/noflo-draggabilly":"*"},"json":["component.json"],"files":["iframe.html"]}');
+module.exports = JSON.parse('{"name":"noflo-ui-preview","description":"NoFlo runtime environment for client-side previews","author":"Henri Bergius <henri.bergius@iki.fi>","repo":"noflo/noflo-ui","keywords":[],"dependencies":{"noflo/noflo":"*","noflo/noflo-runtime-iframe":"*","noflo/noflo-ajax":"*","noflo/noflo-core":"*","noflo/noflo-css":"*","noflo/noflo-dom":"*","noflo/noflo-flow":"*","noflo/noflo-interaction":"*","noflo/noflo-localstorage":"*","noflo/noflo-math":"*","noflo/noflo-objects":"*","noflo/noflo-physics":"*","noflo/noflo-strings":"*","noflo/noflo-websocket":"*","d4tocchini/noflo-draggabilly":"*"},"json":["component.json"],"files":["iframe.html"]}');
 });
+
 
 
 
@@ -10315,6 +10767,7 @@ require.alias("noflo-noflo-css/index.js", "noflo-ui-preview/deps/noflo-css/index
 require.alias("noflo-noflo-css/component.json", "noflo-ui-preview/deps/noflo-css/component.json");
 require.alias("noflo-noflo-css/components/MoveElement.js", "noflo-ui-preview/deps/noflo-css/components/MoveElement.js");
 require.alias("noflo-noflo-css/components/RotateElement.js", "noflo-ui-preview/deps/noflo-css/components/RotateElement.js");
+require.alias("noflo-noflo-css/components/SetElementTop.js", "noflo-ui-preview/deps/noflo-css/components/SetElementTop.js");
 require.alias("noflo-noflo-css/index.js", "noflo-css/index.js");
 require.alias("noflo-noflo/component.json", "noflo-noflo-css/deps/noflo/component.json");
 require.alias("noflo-noflo/src/lib/Graph.js", "noflo-noflo-css/deps/noflo/src/lib/Graph.js");
@@ -10406,6 +10859,7 @@ require.alias("noflo-noflo-interaction/components/ListenHash.js", "noflo-ui-prev
 require.alias("noflo-noflo-interaction/components/ListenKeyboard.js", "noflo-ui-preview/deps/noflo-interaction/components/ListenKeyboard.js");
 require.alias("noflo-noflo-interaction/components/ListenMouse.js", "noflo-ui-preview/deps/noflo-interaction/components/ListenMouse.js");
 require.alias("noflo-noflo-interaction/components/ListenScroll.js", "noflo-ui-preview/deps/noflo-interaction/components/ListenScroll.js");
+require.alias("noflo-noflo-interaction/components/ListenSpeech.js", "noflo-ui-preview/deps/noflo-interaction/components/ListenSpeech.js");
 require.alias("noflo-noflo-interaction/components/ListenTouch.js", "noflo-ui-preview/deps/noflo-interaction/components/ListenTouch.js");
 require.alias("noflo-noflo-interaction/components/SetHash.js", "noflo-ui-preview/deps/noflo-interaction/components/SetHash.js");
 require.alias("noflo-noflo-interaction/index.js", "noflo-interaction/index.js");
@@ -10603,6 +11057,34 @@ require.alias("noflo-fbp/lib/fbp.js", "noflo-fbp/index.js");
 require.alias("noflo-noflo/src/lib/NoFlo.js", "noflo-noflo/index.js");
 require.alias("component-underscore/index.js", "noflo-noflo-strings/deps/underscore/index.js");
 
+require.alias("noflo-noflo-websocket/index.js", "noflo-ui-preview/deps/noflo-websocket/index.js");
+require.alias("noflo-noflo-websocket/component.json", "noflo-ui-preview/deps/noflo-websocket/component.json");
+require.alias("noflo-noflo-websocket/components/Connect.js", "noflo-ui-preview/deps/noflo-websocket/components/Connect.js");
+require.alias("noflo-noflo-websocket/components/SendMessage.js", "noflo-ui-preview/deps/noflo-websocket/components/SendMessage.js");
+require.alias("noflo-noflo-websocket/components/ListenMessages.js", "noflo-ui-preview/deps/noflo-websocket/components/ListenMessages.js");
+require.alias("noflo-noflo-websocket/index.js", "noflo-websocket/index.js");
+require.alias("noflo-noflo/component.json", "noflo-noflo-websocket/deps/noflo/component.json");
+require.alias("noflo-noflo/src/lib/Graph.js", "noflo-noflo-websocket/deps/noflo/src/lib/Graph.js");
+require.alias("noflo-noflo/src/lib/InternalSocket.js", "noflo-noflo-websocket/deps/noflo/src/lib/InternalSocket.js");
+require.alias("noflo-noflo/src/lib/Port.js", "noflo-noflo-websocket/deps/noflo/src/lib/Port.js");
+require.alias("noflo-noflo/src/lib/ArrayPort.js", "noflo-noflo-websocket/deps/noflo/src/lib/ArrayPort.js");
+require.alias("noflo-noflo/src/lib/Component.js", "noflo-noflo-websocket/deps/noflo/src/lib/Component.js");
+require.alias("noflo-noflo/src/lib/AsyncComponent.js", "noflo-noflo-websocket/deps/noflo/src/lib/AsyncComponent.js");
+require.alias("noflo-noflo/src/lib/LoggingComponent.js", "noflo-noflo-websocket/deps/noflo/src/lib/LoggingComponent.js");
+require.alias("noflo-noflo/src/lib/ComponentLoader.js", "noflo-noflo-websocket/deps/noflo/src/lib/ComponentLoader.js");
+require.alias("noflo-noflo/src/lib/NoFlo.js", "noflo-noflo-websocket/deps/noflo/src/lib/NoFlo.js");
+require.alias("noflo-noflo/src/lib/Network.js", "noflo-noflo-websocket/deps/noflo/src/lib/Network.js");
+require.alias("noflo-noflo/src/components/Graph.js", "noflo-noflo-websocket/deps/noflo/src/components/Graph.js");
+require.alias("noflo-noflo/src/lib/NoFlo.js", "noflo-noflo-websocket/deps/noflo/index.js");
+require.alias("component-emitter/index.js", "noflo-noflo/deps/emitter/index.js");
+require.alias("component-indexof/index.js", "component-emitter/deps/indexof/index.js");
+
+require.alias("component-underscore/index.js", "noflo-noflo/deps/underscore/index.js");
+
+require.alias("noflo-fbp/lib/fbp.js", "noflo-noflo/deps/fbp/lib/fbp.js");
+require.alias("noflo-fbp/lib/fbp.js", "noflo-noflo/deps/fbp/index.js");
+require.alias("noflo-fbp/lib/fbp.js", "noflo-fbp/index.js");
+require.alias("noflo-noflo/src/lib/NoFlo.js", "noflo-noflo/index.js");
 require.alias("d4tocchini-noflo-draggabilly/index.js", "noflo-ui-preview/deps/noflo-draggabilly/index.js");
 require.alias("d4tocchini-noflo-draggabilly/component.json", "noflo-ui-preview/deps/noflo-draggabilly/component.json");
 require.alias("d4tocchini-noflo-draggabilly/components/Draggabilly.js", "noflo-ui-preview/deps/noflo-draggabilly/components/Draggabilly.js");

@@ -4,6 +4,7 @@
     <meta charset="utf-8">
 
     <title>NoFlo Development Environment</title>
+    <link rel="shortcut icon" href="favicon.ico" />
 
     <!-- Dataflow Dependencies -->
     <script src="./browser/meemoo-dataflow/libs/jquery.js"></script>
@@ -206,6 +207,7 @@
       SplitGist OUT -> WRITETEMPLATE EditExample
       ParseExample OUT -> IN LoadExample
       LoadExample OUT -> GRAPH EditExample
+      EditExample CHANGED -> IN DropChangedExample(core/Drop)
 
       # Routing
       '' -> START ListenHash(interaction/ListenHash)
