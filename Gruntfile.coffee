@@ -4,6 +4,8 @@ module.exports = ->
     pkg: @file.readJSON 'package.json'
 
     exec:
+      nuke_main:
+        command: 'rm -rf ./components/*/'
       main_install:
         command: './node_modules/.bin/component install'
       main_build:
