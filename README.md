@@ -9,6 +9,12 @@ The NoFlo UI Server has not yet been published via NPM. In the meanwhile, grab t
 
     $ npm install
 
+You also need to build the browser-side files with:
+
+    $ grunt build
+
+(install Grunt via `npm install -g grunt-cli` if you don't have it yet)
+
 ## Running
 
 This application provides the user interface for editing an existing NoFlo project. To start it, you need to point the process to the directory where your project is on the filesystem:
