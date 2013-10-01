@@ -3408,6 +3408,13 @@ Port = (function(_super) {
     return this.socket !== null;
   };
 
+  Port.prototype.canAttach = function() {
+    if (this.isAttached()) {
+      return false;
+    }
+    return true;
+  };
+
   return Port;
 
 })(EventEmitter);
@@ -3582,12 +3589,19 @@ ArrayPort = (function(_super) {
 
   ArrayPort.prototype.isAttached = function(socketId) {
     if (socketId === void 0) {
+      if (this.sockets.length > 0) {
+        return true;
+      }
       return false;
     }
     if (this.sockets[socketId]) {
       return true;
     }
     return false;
+  };
+
+  ArrayPort.prototype.canAttach = function() {
+    return true;
   };
 
   return ArrayPort;
@@ -4707,7 +4721,7 @@ Graph = (function(_super) {
   Graph.prototype.isExported = function(port, nodeName, portName) {
     var exported, newPort, _i, _len, _ref;
     newPort = this.portName(nodeName, portName);
-    if (port.isAttached()) {
+    if (!port.canAttach()) {
       return false;
     }
     if (this.network.graph.exports.length === 0) {
@@ -10197,7 +10211,7 @@ ParseJson = (function(_super) {
     this.outPorts = {
       out: new noflo.Port()
     };
-    this.inPorts["in"].on("data", function(data) {
+    this.inPorts["try"].on("data", function(data) {
       if (data === "true") {
         return _this["try"] = true;
       }
