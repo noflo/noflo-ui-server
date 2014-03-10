@@ -1,3 +1,5 @@
+**Deprecation notice:** noflo-ui-server is no longer necessary for running the [NoFlo UI](https://github.com/noflo/noflo-ui). Instead, run the UI from any HTTP server, or just access the hosted version at <noflojs.org/noflo-ui/>. To run NoFlo graphs on Node.js you need to install, configure, and run [noflo-nodejs](https://github.com/noflo/noflo-nodejs).
+
 NoFlo Development Environment Server [![Build Status](https://travis-ci.org/noflo/noflo-ui-server.png?branch=master)](https://travis-ci.org/noflo/noflo-ui-server)
 ====================================
 
