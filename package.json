@@ -20,16 +20,16 @@
     "noflo-ui": "./bin/noflo-ui"
   },
   "dependencies": {
-    "noflo-runtime-websocket": "0.1.x",
-    "commander": "~2.0.0",
-    "connect": "~2.9.0"
+    "noflo-runtime-websocket": "~0.6.2",
+    "commander": "~2.9.0",
+    "connect": "~3.5.0"
   },
   "devDependencies": {
-    "grunt": "~0.4.1",
-    "grunt-exec": "~0.4.2",
+    "grunt": "~1.0.1",
+    "grunt-exec": "~1.0.1",
     "component-builder": "git://github.com/bergie/builder.js.git#patch-1",
     "component-json": "~0.1.4",
     "component-coffee": "~0.1.4",
-    "component": "~0.17.6"
+    "component": "~1.1.0"
   }
 }
